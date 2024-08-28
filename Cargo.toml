@@ -32,6 +32,7 @@ alloy = { version = "0.2", features = [
     "rpc-types-eth",
     "signer-local",
 ] }
+db = { path = "../db" }
 
 [features]
 default = ["filters", "state-space"]
