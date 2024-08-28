@@ -7,6 +7,8 @@ interface IUniswapV3Pool {
     function token1() external view returns (address);
 
     function factory() external view returns (address);
+
+    function fee() external view returns (uint24);
 }
 
 interface IERC20 {
@@ -21,12 +23,15 @@ interface IERC20 {
 contract GetDetailedPoolDataBatchRequest {
     struct PoolData {
         address tokenA;
+        bytes32 tokenASymbol;
         uint8 tokenADecimals;
-        string tokenASymbol;
         address tokenB;
+        bytes32 tokenBSymbol;
         uint8 tokenBDecimals;
-        string tokenBSymbol;
         address factory;
+        uint112 reserve0;
+        uint112 reserve1;
+        uint24 fee;
     }
 
     constructor(address[] memory pools) {
@@ -92,21 +97,29 @@ contract GetDetailedPoolDataBatchRequest {
                 poolData.tokenA.call{gas: 20000}(abi.encodeWithSignature("symbol()"));
 
             if (tokenASymbolSuccess) {
-                poolData.tokenASymbol = string(tokenASymbolData);
+                string memory symbol = abi.decode(tokenASymbolData, (string));
+                poolData.tokenASymbol = stringToBytes32(symbol);
+            } else {
+                poolData.tokenASymbol = bytes32(0);
             }
 
             (bool tokenBSymbolSuccess, bytes memory tokenBSymbolData) =
                 poolData.tokenB.call{gas: 20000}(abi.encodeWithSignature("symbol()"));
 
             if (tokenBSymbolSuccess) {
-                poolData.tokenBSymbol = string(tokenBSymbolData);
+                string memory symbol = abi.decode(tokenBSymbolData, (string));
+                poolData.tokenBSymbol = stringToBytes32(symbol);
+            } else {
+                poolData.tokenBSymbol = bytes32(0);
             }
 
-            (bool factorySuccess, bytes memory factoryData) =
-                poolData.tokenB.call{gas: 20000}(abi.encodeWithSignature("factory()"));
+            poolData.factory = IUniswapV3Pool(poolAddress).factory();
 
-            if (factorySuccess) {
-                poolData.factory = abi.decode(factoryData, (address));
+            try IUniswapV3Pool(poolAddress).fee() returns (uint24 _fee) {
+                poolData.fee = _fee;
+            } catch {
+                // If this fails, it might be a V2 pool or not a Uniswap pool at all
+                poolData.fee = 3000; // Default to 0.3% for V2 pools
             }
 
             allPoolData[i] = poolData;
@@ -126,6 +139,17 @@ contract GetDetailedPoolDataBatchRequest {
             return true;
         } else {
             return false;
+        }
+    }
+
+    function stringToBytes32(string memory source) internal pure returns (bytes32 result) {
+        bytes memory tempEmptyStringTest = bytes(source);
+        if (tempEmptyStringTest.length == 0) {
+            return 0x0;
+        }
+
+        assembly {
+            result := mload(add(source, 32))
         }
     }
 }

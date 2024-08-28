@@ -34,18 +34,18 @@ where
     let res = deployer.call().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
-        DynSolType::Address,   //pool address
-        DynSolType::Address,   //token a
-        DynSolType::String,    //token a symbol
-        DynSolType::Uint(8),   //token a decimals
-        DynSolType::Address,   //token b
-        DynSolType::String,    //token b symbol
-        DynSolType::Uint(8),   //token b decimals
-        DynSolType::Address,   //factory address
-        DynSolType::Uint(112), //reserve 0
-        DynSolType::Uint(112), //reserve 1
-        DynSolType::Uint(32),  //fee
+        DynSolType::Address,        //token a
+        DynSolType::FixedBytes(32), //token a symbol
+        DynSolType::Uint(8),        //token a decimals
+        DynSolType::Address,        //token b
+        DynSolType::FixedBytes(32), //token b symbol
+        DynSolType::Uint(8),        //token b decimals
+        DynSolType::Address,        //factory address
+        DynSolType::Uint(112),      //reserve 0
+        DynSolType::Uint(112),      //reserve 1
+        DynSolType::Uint(24),       //fee
     ])));
+
     let return_data_tokens = constructor_return.abi_decode_sequence(&res)?;
 
     let mut pool_idx = 0;
@@ -64,6 +64,7 @@ where
                             populate_pool_data_from_tokens(pool.to_owned(), pool_data)
                         {
                             tracing::trace!(?detailed_pool);
+                            println!("Detailed pool: {:?}", detailed_pool);
                             *pool = detailed_pool;
                         }
                     }
@@ -82,16 +83,22 @@ fn populate_pool_data_from_tokens(
     mut pool: DetailedPool,
     tokens: &[DynSolValue],
 ) -> Option<DetailedPool> {
-    pool.address = tokens[0].as_address()?;
-    pool.token_a = tokens[1].as_address()?;
-    pool.token_a_symbol = tokens[2].as_str()?.to_string();
-    pool.token_a_decimals = tokens[3].as_uint()?.0.to::<u8>();
-    pool.token_b = tokens[4].as_address()?;
-    pool.token_b_symbol = tokens[5].as_str()?.to_string();
-    pool.token_b_decimals = tokens[6].as_uint()?.0.to::<u8>();
-    pool.factory_address = tokens[7].as_address()?;
-    pool.reserve_0 = tokens[8].as_uint()?.0.to::<u128>();
-    pool.reserve_1 = tokens[9].as_uint()?.0.to::<u128>();
-    pool.fee = tokens[10].as_uint()?.0.to::<u32>();
+    pool.address = pool.address;
+    pool.token_a = tokens[0].as_address()?;
+    pool.token_a_symbol = bytes32_to_string(tokens[1].as_fixed_bytes()?.0);
+    pool.token_a_decimals = tokens[2].as_uint()?.0.to::<u8>();
+    pool.token_b = tokens[3].as_address()?;
+    pool.token_b_symbol = bytes32_to_string(tokens[4].as_fixed_bytes()?.0);
+    pool.token_b_decimals = tokens[5].as_uint()?.0.to::<u8>();
+    pool.factory_address = tokens[6].as_address()?;
+    pool.reserve_0 = tokens[7].as_uint()?.0.to::<u128>();
+    pool.reserve_1 = tokens[8].as_uint()?.0.to::<u128>();
+    pool.fee = tokens[9].as_uint()?.0.to::<u32>();
     Some(pool)
+}
+
+fn bytes32_to_string(bytes: &[u8]) -> String {
+    let mut result = String::from_utf8_lossy(bytes).into_owned();
+    result.truncate(result.trim_end_matches('\0').len());
+    result
 }
