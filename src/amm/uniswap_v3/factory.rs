@@ -271,11 +271,7 @@ impl UniswapV3Factory {
             let logs = provider
                 .get_logs(
                     &Filter::new()
-                        .event_signature(vec![
-                            IUniswapV3Factory::PoolCreated::SIGNATURE_HASH,
-                            IUniswapV3Pool::Burn::SIGNATURE_HASH,
-                            IUniswapV3Pool::Mint::SIGNATURE_HASH,
-                        ])
+                        .event_signature(vec![IUniswapV3Factory::PoolCreated::SIGNATURE_HASH])
                         .from_block(from_block)
                         .to_block(target_block),
                 )
@@ -306,23 +302,8 @@ impl UniswapV3Factory {
                 //If the event sig is the pool created event sig, then the log is coming from the factory
                 if event_signature == IUniswapV3Factory::PoolCreated::SIGNATURE_HASH {
                     if log.address() == self.address {
-                        let mut new_pool = self.new_empty_amm_from_log(log)?;
-                        if let AMM::UniswapV3Pool(ref mut pool) = new_pool {
-                            pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
-                        }
-
+                        let new_pool = self.new_empty_amm_from_log(log)?;
                         aggregated_amms.insert(new_pool.address(), new_pool);
-                    }
-                } else if event_signature == IUniswapV3Pool::Burn::SIGNATURE_HASH {
-                    //If the event sig is the BURN_EVENT_SIGNATURE log is coming from the pool
-                    if let Some(AMM::UniswapV3Pool(pool)) = aggregated_amms.get_mut(&log.address())
-                    {
-                        pool.sync_from_burn_log(log)?;
-                    }
-                } else if event_signature == IUniswapV3Pool::Mint::SIGNATURE_HASH {
-                    if let Some(AMM::UniswapV3Pool(pool)) = aggregated_amms.get_mut(&log.address())
-                    {
-                        pool.sync_from_mint_log(log)?;
                     }
                 }
             }
