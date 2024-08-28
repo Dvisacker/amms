@@ -149,7 +149,6 @@ impl UniswapV3Factory {
         }
     }
 
-    // Function to get all pair created events for a given Dex factory address and sync pool data
     pub async fn get_all_pools_from_logs<T, N, P>(
         self,
         to_block: u64,
@@ -165,37 +164,33 @@ impl UniswapV3Factory {
         let mut from_block = self.creation_block;
         let mut aggregated_amms: HashMap<Address, AMM> = HashMap::new();
         let mut ordered_logs: BTreeMap<u64, Vec<Log>> = BTreeMap::new();
-        let mut futures = FuturesOrdered::new();
+        // let mut futures = FuturesOrdered::new();
 
         while from_block < to_block {
-            let provider = provider.clone();
-
             let mut target_block = from_block + step - 1;
+            println!(
+                "Getting logs from block: {} to block: {}",
+                from_block, target_block
+            );
             if target_block > to_block {
                 target_block = to_block;
             }
 
-            futures.push_back(async move {
-                provider
-                    .get_logs(
-                        &Filter::new()
-                            .event_signature(vec![
-                                IUniswapV3Factory::PoolCreated::SIGNATURE_HASH,
-                                IUniswapV3Pool::Burn::SIGNATURE_HASH,
-                                IUniswapV3Pool::Mint::SIGNATURE_HASH,
-                            ])
-                            .from_block(from_block)
-                            .to_block(target_block),
-                    )
-                    .await
-            });
+            let logs = provider
+                .get_logs(
+                    &Filter::new()
+                        .event_signature(vec![
+                            IUniswapV3Factory::PoolCreated::SIGNATURE_HASH,
+                            IUniswapV3Pool::Burn::SIGNATURE_HASH,
+                            IUniswapV3Pool::Mint::SIGNATURE_HASH,
+                        ])
+                        .from_block(from_block)
+                        .to_block(target_block),
+                )
+                .await
+                .map_err(AMMError::TransportError)?;
 
-            from_block += step;
-        }
-
-        // TODO: this could be more dry since we use this in another place
-        while let Some(result) = futures.next().await {
-            let logs = result.map_err(AMMError::TransportError)?;
+            println!("Got {:?} Logs", logs.len());
 
             for log in logs {
                 if let Some(log_block_number) = log.block_number {
@@ -208,6 +203,100 @@ impl UniswapV3Factory {
                     return Err(EventLogError::LogBlockNumberNotFound)?;
                 }
             }
+
+            from_block += step;
+        }
+
+        for (_, log_group) in ordered_logs {
+            for log in log_group {
+                let event_signature = log.topics()[0];
+
+                //If the event sig is the pool created event sig, then the log is coming from the factory
+                if event_signature == IUniswapV3Factory::PoolCreated::SIGNATURE_HASH {
+                    if log.address() == self.address {
+                        let mut new_pool = self.new_empty_amm_from_log(log)?;
+                        if let AMM::UniswapV3Pool(ref mut pool) = new_pool {
+                            pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
+                        }
+
+                        aggregated_amms.insert(new_pool.address(), new_pool);
+                    }
+                } else if event_signature == IUniswapV3Pool::Burn::SIGNATURE_HASH {
+                    //If the event sig is the BURN_EVENT_SIGNATURE log is coming from the pool
+                    if let Some(AMM::UniswapV3Pool(pool)) = aggregated_amms.get_mut(&log.address())
+                    {
+                        pool.sync_from_burn_log(log)?;
+                    }
+                } else if event_signature == IUniswapV3Pool::Mint::SIGNATURE_HASH {
+                    if let Some(AMM::UniswapV3Pool(pool)) = aggregated_amms.get_mut(&log.address())
+                    {
+                        pool.sync_from_mint_log(log)?;
+                    }
+                }
+            }
+        }
+
+        Ok(aggregated_amms.into_values().collect::<Vec<AMM>>())
+    }
+
+    // Function to get all pair created events for a given Dex factory address and sync pool data
+    pub async fn get_pools_from_logs<T, N, P>(
+        self,
+        start_block: u64,
+        to_block: u64,
+        step: u64,
+        provider: Arc<P>,
+    ) -> Result<Vec<AMM>, AMMError>
+    where
+        T: Transport + Clone,
+        N: Network,
+        P: Provider<T, N>,
+    {
+        // Unwrap can be used here because the creation block was verified within `Dex::new()`
+        let mut aggregated_amms: HashMap<Address, AMM> = HashMap::new();
+        let mut ordered_logs: BTreeMap<u64, Vec<Log>> = BTreeMap::new();
+        let mut from_block = start_block;
+        // let mut futures = FuturesOrdered::new();
+
+        while from_block < to_block {
+            let mut target_block = from_block + step - 1;
+            println!(
+                "Getting logs from block: {} to block: {}",
+                from_block, target_block
+            );
+            if target_block > to_block {
+                target_block = to_block;
+            }
+
+            let logs = provider
+                .get_logs(
+                    &Filter::new()
+                        .event_signature(vec![
+                            IUniswapV3Factory::PoolCreated::SIGNATURE_HASH,
+                            IUniswapV3Pool::Burn::SIGNATURE_HASH,
+                            IUniswapV3Pool::Mint::SIGNATURE_HASH,
+                        ])
+                        .from_block(from_block)
+                        .to_block(target_block),
+                )
+                .await
+                .map_err(AMMError::TransportError)?;
+
+            println!("Got {:?} Logs", logs.len());
+
+            for log in logs {
+                if let Some(log_block_number) = log.block_number {
+                    if let Some(log_group) = ordered_logs.get_mut(&log_block_number) {
+                        log_group.push(log);
+                    } else {
+                        ordered_logs.insert(log_block_number, vec![log]);
+                    }
+                } else {
+                    return Err(EventLogError::LogBlockNumberNotFound)?;
+                }
+            }
+
+            from_block += step;
         }
 
         for (_, log_group) in ordered_logs {

@@ -37,51 +37,29 @@ where
 
     // Aggregate the populated pools from each thread
     let mut aggregated_amms: Vec<AMM> = vec![];
-    let mut handles = vec![];
 
+    let provider = provider.clone();
     // For each dex supplied, get all pair created events and get reserve values
     for factory in factories.clone() {
-        let provider = provider.clone();
+        let mut amms = factory
+            .get_all_amms(Some(current_block), provider.clone(), step)
+            .await?;
 
-        // Spawn a new thread to get all pools and sync data for each dex
-        handles.push(tokio::spawn(async move {
-            tracing::info!(?factory, "Getting all AMMs from factory");
-            // Get all of the amms from the factory
-            let mut amms = factory
-                .get_all_amms(Some(current_block), provider.clone(), step)
-                .await?;
+        tracing::info!(?factory, "Populating AMMs from factory");
+        populate_amms(&mut amms, current_block, provider.clone()).await?;
 
-            tracing::info!(?factory, "Populating AMMs from factory");
-            populate_amms(&mut amms, current_block, provider.clone()).await?;
+        amms = filters::filter_empty_amms(amms);
 
-            // Clean empty pools
-            amms = filters::filter_empty_amms(amms);
-
-            // If the factory is UniswapV2, set the fee for each pool according to the factory fee
-            if let Factory::UniswapV2Factory(factory) = factory {
-                for amm in amms.iter_mut() {
-                    if let AMM::UniswapV2Pool(ref mut pool) = amm {
-                        pool.fee = factory.fee;
-                    }
-                }
-            }
-
-            Ok::<_, AMMError>(amms)
-        }));
-    }
-
-    for handle in handles {
-        match handle.await {
-            Ok(sync_result) => aggregated_amms.extend(sync_result?),
-            Err(err) => {
-                {
-                    if err.is_panic() {
-                        // Resume the panic on the main task
-                        resume_unwind(err.into_panic());
-                    }
+        // If the factory is UniswapV2, set the fee for each pool according to the factory fee
+        if let Factory::UniswapV2Factory(factory) = factory {
+            for amm in amms.iter_mut() {
+                if let AMM::UniswapV2Pool(ref mut pool) = amm {
+                    pool.fee = factory.fee;
                 }
             }
         }
+
+        aggregated_amms.extend(amms);
     }
 
     // Save a checkpoint if a path is provided
