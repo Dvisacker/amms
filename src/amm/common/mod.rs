@@ -6,8 +6,9 @@ use alloy::{
     transports::Transport,
 };
 use std::sync::Arc;
+use types::DetailedPool;
 
-use crate::{errors::AMMError, types::DetailedPool};
+use crate::errors::AMMError;
 
 sol! {
     #[allow(missing_docs)]

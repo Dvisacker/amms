@@ -33,6 +33,7 @@ alloy = { version = "0.2", features = [
     "signer-local",
 ] }
 db = { path = "../db" }
+types = { path = "../types" }
 
 [features]
 default = ["filters", "state-space"]
