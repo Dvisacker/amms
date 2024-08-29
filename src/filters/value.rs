@@ -60,7 +60,19 @@ where
     .await?;
 
     for (i, weth_value) in weth_values_in_pools.iter().enumerate() {
-        if (weth_value / U256_10_POW_18).to::<u64>() as f64 * weth_usd_price
+        // reject any absurdly large values > 1000000 ether
+        // Example: Create a U256 value representing 10^36
+        let large_value = U256::from_limbs([
+            0,                         // Least significant limb
+            0,                         // Second limb
+            1_000_000_000_000_000_000, // Third limb (10^18)
+            1_000_000_000_000_000_000, // Fourth limb (10^18)
+        ]);
+        if weth_value > &large_value {
+            continue;
+        }
+
+        if (weth_value / U256_10_POW_18).to::<u128>() as f64 * weth_usd_price
             >= usd_value_in_pool_threshold
         {
             // TODO: using clone for now since we only do this once but find a better way in a future update
