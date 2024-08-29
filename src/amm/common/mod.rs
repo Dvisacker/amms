@@ -6,7 +6,7 @@ use alloy::{
     transports::Transport,
 };
 use std::sync::Arc;
-use types::DetailedPool;
+use types::pool::DetailedPool;
 
 use crate::errors::AMMError;
 

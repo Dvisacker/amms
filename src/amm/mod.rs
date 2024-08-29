@@ -18,8 +18,10 @@ use alloy::{
     sol,
     transports::Transport,
 };
+use alloy_chains::NamedChain;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
+use types::exchange::{ExchangeName, ExchangeType};
 
 use crate::errors::{AMMError, ArithmeticError, EventLogError, SwapSimulationError};
 
@@ -52,6 +54,8 @@ pub trait AutomatedMarketMaker {
 
     /// Returns a vector of tokens in the AMM.
     fn tokens(&self) -> Vec<Address>;
+
+    fn token_symbols(&self) -> Vec<String>;
 
     /// Calculates a f64 representation of base token price in the AMM.
     fn calculate_price(&self, base_token: Address) -> Result<f64, ArithmeticError>;
@@ -90,6 +94,10 @@ pub trait AutomatedMarketMaker {
 
     /// Returns the token out of the AMM for a given `token_in`.
     fn get_token_out(&self, token_in: Address) -> Address;
+
+    fn exchange_name(&self) -> ExchangeName;
+    fn exchange_type(&self) -> ExchangeType;
+    fn chain(&self) -> NamedChain;
 }
 
 macro_rules! amm {
@@ -168,6 +176,30 @@ macro_rules! amm {
             fn calculate_price(&self, base_token: Address) -> Result<f64, ArithmeticError> {
                 match self {
                     $(AMM::$pool_type(pool) => pool.calculate_price(base_token),)+
+                }
+            }
+
+            fn token_symbols(&self) -> Vec<String> {
+                match self {
+                    $(AMM::$pool_type(pool) => pool.token_symbols(),)+
+                }
+            }
+
+            fn exchange_name(&self) -> ExchangeName {
+                match self {
+                    $(AMM::$pool_type(pool) => pool.exchange_name(),)+
+                }
+            }
+
+            fn exchange_type(&self) -> ExchangeType {
+                match self {
+                    $(AMM::$pool_type(pool) => pool.exchange_type(),)+
+                }
+            }
+
+            fn chain(&self) -> NamedChain {
+                match self {
+                    $(AMM::$pool_type(pool) => pool.chain(),)+
                 }
             }
         }

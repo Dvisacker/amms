@@ -1,8 +1,10 @@
 use alloy::primitives::{address, U256};
 use criterion::{criterion_group, criterion_main, Criterion};
 
+use alloy_chains::NamedChain;
 use amms::amm::uniswap_v2::UniswapV2Pool;
 use amms::amm::AutomatedMarketMaker;
+use types::exchange::{ExchangeName, ExchangeType};
 
 /// Generate a random ether amount between `from` and `to`
 fn random_ether(from: f32, to: f32) -> u128 {
@@ -17,11 +19,16 @@ fn criterion_benchmark(c: &mut Criterion) {
         address: address!("ddF8390cEd9fAD414b1ca1DD4Fe14F881C2Cfa70"),
         token_a,
         token_a_decimals: 18,
+        token_a_symbol: "A".to_string(),
         token_b: address!("fc0d6cf33e38bce7ca7d89c0e292274031b7157a"),
         token_b_decimals: 18,
+        token_b_symbol: "B".to_string(),
         reserve_0: 0_u128,
         reserve_1: 0_u128,
         fee: 300,
+        exchange_name: ExchangeName::Unknown,
+        exchange_type: ExchangeType::Unknown,
+        chain: NamedChain::Mainnet,
     };
     c.bench_function("uniswapv2_simuluate", |b| {
         b.iter(|| {

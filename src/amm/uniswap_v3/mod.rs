@@ -14,6 +14,7 @@ use alloy::{
     sol_types::{SolCall, SolEvent},
     transports::Transport,
 };
+use alloy_chains::NamedChain;
 use async_trait::async_trait;
 use futures::{stream::FuturesOrdered, StreamExt};
 use num_bigfloat::BigFloat;
@@ -24,6 +25,8 @@ use std::{
     sync::Arc,
 };
 use tracing::instrument;
+use types::chain_serde;
+use types::exchange::{ExchangeName, ExchangeType};
 use uniswap_v3_math::tick_math::{MAX_SQRT_RATIO, MAX_TICK, MIN_SQRT_RATIO, MIN_TICK};
 
 use self::factory::IUniswapV3Factory;
@@ -53,8 +56,10 @@ pub struct UniswapV3Pool {
     pub address: Address,
     pub token_a: Address,
     pub token_a_decimals: u8,
+    pub token_a_symbol: String,
     pub token_b: Address,
     pub token_b_decimals: u8,
+    pub token_b_symbol: String,
     pub liquidity: u128,
     pub sqrt_price: U256,
     pub fee: u32,
@@ -62,6 +67,10 @@ pub struct UniswapV3Pool {
     pub tick_spacing: i32,
     pub tick_bitmap: HashMap<i16, U256>,
     pub ticks: HashMap<i32, Info>,
+    pub exchange_name: ExchangeName,
+    pub exchange_type: ExchangeType,
+    #[serde(with = "chain_serde")]
+    pub chain: NamedChain,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -450,6 +459,22 @@ impl AutomatedMarketMaker for UniswapV3Pool {
             self.token_a
         }
     }
+
+    fn token_symbols(&self) -> Vec<String> {
+        vec![self.token_a_symbol.clone(), self.token_b_symbol.clone()]
+    }
+
+    fn exchange_name(&self) -> ExchangeName {
+        self.exchange_name
+    }
+
+    fn exchange_type(&self) -> ExchangeType {
+        self.exchange_type
+    }
+
+    fn chain(&self) -> NamedChain {
+        self.chain
+    }
 }
 
 impl UniswapV3Pool {
@@ -458,8 +483,10 @@ impl UniswapV3Pool {
         address: Address,
         token_a: Address,
         token_a_decimals: u8,
+        token_a_symbol: String,
         token_b: Address,
         token_b_decimals: u8,
+        token_b_symbol: String,
         fee: u32,
         liquidity: u128,
         sqrt_price: U256,
@@ -467,13 +494,18 @@ impl UniswapV3Pool {
         tick_spacing: i32,
         tick_bitmap: HashMap<i16, U256>,
         ticks: HashMap<i32, Info>,
+        exchange_name: ExchangeName,
+        exchange_type: ExchangeType,
+        chain: NamedChain,
     ) -> UniswapV3Pool {
         UniswapV3Pool {
             address,
             token_a,
             token_a_decimals,
+            token_a_symbol,
             token_b,
             token_b_decimals,
+            token_b_symbol,
             fee,
             liquidity,
             sqrt_price,
@@ -481,6 +513,9 @@ impl UniswapV3Pool {
             tick_spacing,
             tick_bitmap,
             ticks,
+            exchange_name,
+            exchange_type,
+            chain,
         }
     }
 
@@ -501,8 +536,10 @@ impl UniswapV3Pool {
             address: pair_address,
             token_a: Address::ZERO,
             token_a_decimals: 0,
+            token_a_symbol: String::new(),
             token_b: Address::ZERO,
             token_b_decimals: 0,
+            token_b_symbol: String::new(),
             liquidity: 0,
             sqrt_price: U256::ZERO,
             tick: 0,
@@ -510,6 +547,9 @@ impl UniswapV3Pool {
             fee: 0,
             tick_bitmap: HashMap::new(),
             ticks: HashMap::new(),
+            exchange_name: ExchangeName::UniswapV3,
+            exchange_type: ExchangeType::UniV3,
+            chain: NamedChain::Mainnet,
         };
 
         // We need to get tick spacing before populating tick data because tick spacing can not be uninitialized when syncing burn and mint logs
@@ -567,9 +607,11 @@ impl UniswapV3Pool {
             Ok(UniswapV3Pool {
                 address: pool_created_event.pool,
                 token_a: pool_created_event.token0,
-                token_b: pool_created_event.token1,
                 token_a_decimals: 0,
+                token_a_symbol: String::new(),
+                token_b: pool_created_event.token1,
                 token_b_decimals: 0,
+                token_b_symbol: String::new(),
                 fee: pool_created_event.fee,
                 liquidity: 0,
                 sqrt_price: U256::ZERO,
@@ -577,6 +619,9 @@ impl UniswapV3Pool {
                 tick: 0,
                 tick_bitmap: HashMap::new(),
                 ticks: HashMap::new(),
+                exchange_name: ExchangeName::Unknown,
+                exchange_type: ExchangeType::Unknown,
+                chain: NamedChain::Mainnet,
             })
         } else {
             Err(EventLogError::InvalidEventSignature)
@@ -1091,6 +1136,22 @@ impl UniswapV3Pool {
         }
         .abi_encode()
         .into())
+    }
+
+    fn token_symbols(&self) -> Vec<String> {
+        vec![self.token_a_symbol.clone(), self.token_b_symbol.clone()]
+    }
+
+    fn exchange_name(&self) -> ExchangeName {
+        self.exchange_name
+    }
+
+    fn exchange_type(&self) -> ExchangeType {
+        self.exchange_type
+    }
+
+    fn chain(&self) -> NamedChain {
+        self.chain
     }
 }
 

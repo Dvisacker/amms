@@ -11,9 +11,12 @@ use alloy::{
     sol_types::SolEvent,
     transports::Transport,
 };
+use alloy_chains::NamedChain;
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
+use types::chain_serde;
+use types::exchange::{ExchangeName, ExchangeType};
 
 use crate::{
     amm::{consts::U128_0X10000000000000000, AutomatedMarketMaker},
@@ -40,9 +43,11 @@ pub struct ERC4626Vault {
     /// token received from depositing, i.e. shares token
     pub vault_token: Address,
     pub vault_token_decimals: u8,
+    pub vault_token_symbol: String,
     /// token received from withdrawing, i.e. underlying token
     pub asset_token: Address,
     pub asset_token_decimals: u8,
+    pub asset_token_symbol: String,
     /// total supply of vault tokens
     pub vault_reserve: U256,
     /// total balance of asset tokens held by vault
@@ -51,6 +56,10 @@ pub struct ERC4626Vault {
     pub deposit_fee: u32,
     /// withdrawal fee in basis points
     pub withdraw_fee: u32,
+    pub exchange_name: ExchangeName,
+    pub exchange_type: ExchangeType,
+    #[serde(with = "chain_serde")]
+    pub chain: NamedChain,
 }
 
 #[async_trait]
@@ -167,6 +176,25 @@ impl AutomatedMarketMaker for ERC4626Vault {
             self.vault_token
         }
     }
+
+    fn token_symbols(&self) -> Vec<String> {
+        vec![
+            self.asset_token_symbol.clone(),
+            self.vault_token_symbol.clone(),
+        ]
+    }
+
+    fn exchange_name(&self) -> ExchangeName {
+        self.exchange_name
+    }
+
+    fn exchange_type(&self) -> ExchangeType {
+        self.exchange_type
+    }
+
+    fn chain(&self) -> NamedChain {
+        self.chain
+    }
 }
 
 impl ERC4626Vault {
@@ -174,22 +202,32 @@ impl ERC4626Vault {
     pub fn new(
         vault_token: Address,
         vault_token_decimals: u8,
+        vault_token_symbol: String,
         asset_token: Address,
         asset_token_decimals: u8,
+        asset_token_symbol: String,
         vault_reserve: U256,
         asset_reserve: U256,
         deposit_fee: u32,
         withdraw_fee: u32,
+        exchange_name: ExchangeName,
+        exchange_type: ExchangeType,
+        chain: NamedChain,
     ) -> ERC4626Vault {
         ERC4626Vault {
             vault_token,
             vault_token_decimals,
+            vault_token_symbol,
             asset_token,
             asset_token_decimals,
+            asset_token_symbol,
             vault_reserve,
             asset_reserve,
             deposit_fee,
             withdraw_fee,
+            exchange_name,
+            exchange_type,
+            chain,
         }
     }
 
@@ -205,12 +243,17 @@ impl ERC4626Vault {
         let mut vault = ERC4626Vault {
             vault_token,
             vault_token_decimals: 0,
+            vault_token_symbol: String::new(),
             asset_token: Address::ZERO,
             asset_token_decimals: 0,
+            asset_token_symbol: String::new(),
             vault_reserve: U256::ZERO,
             asset_reserve: U256::ZERO,
             deposit_fee: 0,
             withdraw_fee: 0,
+            exchange_name: ExchangeName::Unknown,
+            exchange_type: ExchangeType::Unknown,
+            chain: NamedChain::Mainnet,
         };
 
         vault.populate_data(None, provider.clone()).await?;

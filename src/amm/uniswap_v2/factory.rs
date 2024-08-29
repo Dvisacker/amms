@@ -9,7 +9,9 @@ use alloy::{
     sol_types::SolEvent,
     transports::Transport,
 };
+use alloy_chains::NamedChain;
 use async_trait::async_trait;
+use types::exchange::{ExchangeName, ExchangeType};
 
 use crate::{
     amm::{factory::AutomatedMarketMakerFactory, AMM},
@@ -137,12 +139,17 @@ impl AutomatedMarketMakerFactory for UniswapV2Factory {
         Ok(AMM::UniswapV2Pool(UniswapV2Pool {
             address: pair_created_event.pair,
             token_a: pair_created_event.token0,
+            token_a_symbol: String::new(),
             token_b: pair_created_event.token1,
+            token_b_symbol: String::new(),
             token_a_decimals: 0,
             token_b_decimals: 0,
             reserve_0: 0,
             reserve_1: 0,
             fee: 0,
+            exchange_name: ExchangeName::Unknown,
+            exchange_type: ExchangeType::Unknown,
+            chain: NamedChain::Mainnet,
         }))
     }
 

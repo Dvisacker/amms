@@ -12,10 +12,11 @@ use alloy::{
     sol_types::SolEvent,
     transports::Transport,
 };
+use alloy_chains::NamedChain;
 use async_trait::async_trait;
-use futures::{stream::FuturesOrdered, StreamExt};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
+use types::exchange::{ExchangeName, ExchangeType};
 
 use crate::{
     amm::{factory::AutomatedMarketMakerFactory, AutomatedMarketMaker, AMM},
@@ -130,6 +131,8 @@ impl AutomatedMarketMakerFactory for UniswapV3Factory {
             token_b: pool_created_event.token1,
             token_a_decimals: 0,
             token_b_decimals: 0,
+            token_a_symbol: String::new(),
+            token_b_symbol: String::new(),
             fee: pool_created_event.fee,
             liquidity: 0,
             sqrt_price: U256::ZERO,
@@ -137,6 +140,9 @@ impl AutomatedMarketMakerFactory for UniswapV3Factory {
             tick: 0,
             tick_bitmap: HashMap::new(),
             ticks: HashMap::new(),
+            exchange_name: ExchangeName::Unknown,
+            exchange_type: ExchangeType::Unknown,
+            chain: NamedChain::Mainnet,
         }))
     }
 }
