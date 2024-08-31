@@ -62,6 +62,12 @@ impl AutomatedMarketMaker for UniswapV2Pool {
         self.address
     }
 
+    fn name(&self) -> String {
+        let symbols = self.token_symbols();
+        let exchange_name = self.exchange_name();
+        format!("{}:{}-{}", exchange_name, symbols[0], symbols[1])
+    }
+
     #[instrument(skip(self, provider), level = "debug")]
     async fn sync<T, N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
     where

@@ -68,6 +68,12 @@ impl AutomatedMarketMaker for ERC4626Vault {
         self.vault_token
     }
 
+    fn name(&self) -> String {
+        let symbols = self.token_symbols();
+        let exchange_name = self.exchange_name();
+        format!("{}:{}-{}", exchange_name, symbols[0], symbols[1])
+    }
+
     fn tokens(&self) -> Vec<Address> {
         vec![self.vault_token, self.asset_token]
     }

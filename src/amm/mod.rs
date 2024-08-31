@@ -98,6 +98,8 @@ pub trait AutomatedMarketMaker {
     fn exchange_name(&self) -> ExchangeName;
     fn exchange_type(&self) -> ExchangeType;
     fn chain(&self) -> NamedChain;
+
+    fn name(&self) -> String;
 }
 
 macro_rules! amm {
@@ -200,6 +202,16 @@ macro_rules! amm {
             fn chain(&self) -> NamedChain {
                 match self {
                     $(AMM::$pool_type(pool) => pool.chain(),)+
+                }
+            }
+
+            fn name(&self) -> String {
+                match self {
+                    $(AMM::$pool_type(pool) => {
+                        let symbols = pool.token_symbols();
+                        let exchange_name = pool.exchange_name();
+                        format!("{}:{}-{}", exchange_name, symbols[0], symbols[1])
+                    },)+
                 }
             }
         }
