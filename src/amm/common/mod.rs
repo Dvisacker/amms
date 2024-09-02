@@ -1,6 +1,7 @@
 use alloy::{
     dyn_abi::{DynSolType, DynSolValue},
     network::Network,
+    primitives::Address,
     providers::Provider,
     sol,
     transports::Transport,
@@ -15,6 +16,36 @@ sol! {
     #[sol(rpc)]
     IGetDetailedPoolDataBatchRequest,
     "src/amm/common/batch_request/GetDetailedPoolDataBatchRequestABI.json"
+}
+
+pub async fn fetch_pool_data_batch_request<T, N, P>(
+    addresses: Vec<Address>,
+    provider: Arc<P>,
+) -> Result<DynSolValue, AMMError>
+where
+    T: Transport + Clone,
+    N: Network,
+    P: Provider<T, N>,
+{
+    let deployer = IGetDetailedPoolDataBatchRequest::deploy_builder(provider, addresses);
+    let res = deployer.call().await?;
+
+    let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
+        DynSolType::Address,        //token a
+        DynSolType::FixedBytes(32), //token a symbol
+        DynSolType::Uint(8),        //token a decimals
+        DynSolType::Address,        //token b
+        DynSolType::FixedBytes(32), //token b symbol
+        DynSolType::Uint(8),        //token b decimals
+        DynSolType::Address,        //factory address
+        DynSolType::Uint(112),      //reserve 0
+        DynSolType::Uint(112),      //reserve 1
+        DynSolType::Uint(24),       //fee
+    ])));
+
+    let return_data_tokens = constructor_return.abi_decode_sequence(&res)?;
+
+    Ok(return_data_tokens)
 }
 
 pub async fn get_detailed_pool_data_batch_request<T, N, P>(
