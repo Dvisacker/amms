@@ -209,15 +209,6 @@ where
         .map(|f| f.address())
         .collect::<Vec<Address>>();
 
-    println!("Factory is univ3: {:?}", factory_is_uni_v3);
-    println!("AMMS: {:?}", amms.len());
-    println!("Factories: {:?}", factories);
-    println!("WETH: {:?}", weth);
-    println!(
-        "WETH value in token to weth pool threshold: {:?}",
-        weth_value_in_token_to_weth_pool_threshold
-    );
-
     let deployer = IGetWethValueInAMMBatchRequest::deploy_builder(
         provider,
         amms,
