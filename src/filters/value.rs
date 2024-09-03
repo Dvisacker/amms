@@ -44,14 +44,12 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    println!("Calculating weth usd price");
     let weth_usd_price = usd_weth_pool.calculate_price(weth)?;
     println!("Weth usd price: {:?}", weth_usd_price);
 
     // Init a new vec to hold the filtered AMMs
     let mut filtered_amms = vec![];
 
-    println!("Getting weth values in amms");
     let weth_values_in_pools = get_weth_values_in_amms(
         &amms,
         factories,
@@ -61,10 +59,8 @@ where
         provider,
     )
     .await?;
-
     println!("Weth values in pools: {:?}", weth_values_in_pools);
 
-    println!("Filtering amms");
     for (i, weth_value) in weth_values_in_pools.iter().enumerate() {
         println!(
             "Pool address: {:?}. WETH value: {:?}",
