@@ -44,11 +44,14 @@ where
     N: Network,
     P: Provider<T, N>,
 {
+    println!("Calculating weth usd price");
     let weth_usd_price = usd_weth_pool.calculate_price(weth)?;
+    println!("Weth usd price: {:?}", weth_usd_price);
 
     // Init a new vec to hold the filtered AMMs
     let mut filtered_amms = vec![];
 
+    println!("Getting weth values in amms");
     let weth_values_in_pools = get_weth_values_in_amms(
         &amms,
         factories,
@@ -59,7 +62,15 @@ where
     )
     .await?;
 
+    println!("Weth values in pools: {:?}", weth_values_in_pools);
+
+    println!("Filtering amms");
     for (i, weth_value) in weth_values_in_pools.iter().enumerate() {
+        println!(
+            "Pool address: {:?}. WETH value: {:?}",
+            amms[i].address(),
+            weth_value / U256_10_POW_18
+        );
         // reject any absurdly large values > 1000000 ether
         // Example: Create a U256 value representing 10^36
         let large_value = U256::from_limbs([
@@ -69,6 +80,7 @@ where
             1_000_000_000_000_000_000, // Fourth limb (10^18)
         ]);
         if weth_value > &large_value {
+            println!("Large weth value: {:?}", weth_value);
             continue;
         }
 
@@ -82,7 +94,6 @@ where
 
     Ok(filtered_amms)
 }
-
 /// Filter that removes AMMs with less aggregate token value than `weth_value_in_pool_threshold`.
 ///
 /// This function uses batched static calls to get the WETH value in each AMM.
@@ -143,6 +154,10 @@ where
     let mut idx_to = if step > amms.len() { amms.len() } else { step };
 
     for _ in (0..amms.len()).step_by(step) {
+        println!(
+            "Getting weth values in amms batch {:?} to {:?}",
+            idx_from, idx_to
+        );
         let weth_values_in_amms = get_weth_value_in_amm_batch_request(
             &amms[idx_from..idx_to],
             factories,
@@ -193,6 +208,15 @@ where
         .iter()
         .map(|f| f.address())
         .collect::<Vec<Address>>();
+
+    println!("Factory is univ3: {:?}", factory_is_uni_v3);
+    println!("AMMS: {:?}", amms.len());
+    println!("Factories: {:?}", factories);
+    println!("WETH: {:?}", weth);
+    println!(
+        "WETH value in token to weth pool threshold: {:?}",
+        weth_value_in_token_to_weth_pool_threshold
+    );
 
     let deployer = IGetWethValueInAMMBatchRequest::deploy_builder(
         provider,

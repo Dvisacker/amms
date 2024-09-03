@@ -1,3 +1,4 @@
+pub mod camelot_v3;
 pub mod common;
 pub mod consts;
 pub mod erc_4626;
@@ -25,7 +26,10 @@ use types::exchange::{ExchangeName, ExchangeType};
 
 use crate::errors::{AMMError, ArithmeticError, EventLogError, SwapSimulationError};
 
-use self::{erc_4626::ERC4626Vault, uniswap_v2::UniswapV2Pool, uniswap_v3::UniswapV3Pool};
+use self::{
+    camelot_v3::CamelotV3Pool, erc_4626::ERC4626Vault, uniswap_v2::UniswapV2Pool,
+    uniswap_v3::UniswapV3Pool,
+};
 
 sol! {
     /// Interface of the ERC20
@@ -232,4 +236,4 @@ macro_rules! amm {
     };
 }
 
-amm!(UniswapV2Pool, UniswapV3Pool, ERC4626Vault);
+amm!(UniswapV2Pool, UniswapV3Pool, ERC4626Vault, CamelotV3Pool);

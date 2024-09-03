@@ -8,9 +8,11 @@ use std::{
 
 use alloy::{network::Network, primitives::Address, providers::Provider, transports::Transport};
 
+use crate::amm::AutomatedMarketMaker;
 use serde::{Deserialize, Serialize};
 
 use tokio::task::JoinHandle;
+use types::exchange::ExchangeType;
 
 use crate::{
     amm::{
@@ -67,7 +69,8 @@ where
         serde_json::from_str(read_to_string(&path_to_checkpoint)?.as_str())?;
 
     // Sort all of the pools from the checkpoint into uniswap_v2_pools and uniswap_v3_pools pools so we can sync them concurrently
-    let (uniswap_v2_pools, uniswap_v3_pools, erc_4626_pools) = sort_amms(checkpoint.amms);
+    let (uniswap_v2_pools, uniswap_v3_pools, erc_4626_pools, camelot_v3_pools) =
+        sort_amms(checkpoint.amms);
 
     let mut aggregated_amms = vec![];
     let mut handles = vec![];
@@ -203,6 +206,7 @@ where
         ))),
 
         AMM::ERC4626Vault(_) => None,
+        AMM::CamelotV3Pool(_) => None,
     };
 
     // Spawn a new thread to get all pools and sync data for each dex
@@ -227,19 +231,27 @@ where
     })
 }
 
-pub fn sort_amms(amms: Vec<AMM>) -> (Vec<AMM>, Vec<AMM>, Vec<AMM>) {
+pub fn sort_amms(amms: Vec<AMM>) -> (Vec<AMM>, Vec<AMM>, Vec<AMM>, Vec<AMM>) {
     let mut uniswap_v2_pools = vec![];
     let mut uniswap_v3_pools = vec![];
     let mut erc_4626_vaults = vec![];
+    let mut camelot_v3_pools = vec![];
     for amm in amms {
-        match amm {
-            AMM::UniswapV2Pool(_) => uniswap_v2_pools.push(amm),
-            AMM::UniswapV3Pool(_) => uniswap_v3_pools.push(amm),
-            AMM::ERC4626Vault(_) => erc_4626_vaults.push(amm),
+        match amm.exchange_type() {
+            ExchangeType::UniV2 => uniswap_v2_pools.push(amm),
+            ExchangeType::UniV3 => uniswap_v3_pools.push(amm),
+            ExchangeType::ERC4626 => erc_4626_vaults.push(amm),
+            ExchangeType::CamelotV3 => camelot_v3_pools.push(amm),
+            _ => (),
         }
     }
 
-    (uniswap_v2_pools, uniswap_v3_pools, erc_4626_vaults)
+    (
+        uniswap_v2_pools,
+        uniswap_v3_pools,
+        erc_4626_vaults,
+        camelot_v3_pools,
+    )
 }
 
 pub async fn get_new_pools_from_range<T, N, P>(

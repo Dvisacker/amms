@@ -23,6 +23,11 @@ pub fn filter_empty_amms(amms: Vec<AMM>) -> Vec<AMM> {
                     cleaned_amms.push(amm)
                 }
             }
+            AMM::CamelotV3Pool(ref camelot_v3_pool) => {
+                if !camelot_v3_pool.token_a.is_zero() && !camelot_v3_pool.token_b.is_zero() {
+                    cleaned_amms.push(amm)
+                }
+            }
         }
     }
 

@@ -2,6 +2,7 @@ pub mod checkpoint;
 
 use crate::{
     amm::{
+        camelot_v3,
         factory::{AutomatedMarketMakerFactory, Factory},
         uniswap_v2, uniswap_v3, AutomatedMarketMaker, AMM,
     },
@@ -125,6 +126,18 @@ where
                 }
             }
 
+            AMM::CamelotV3Pool(_) => {
+                // Max batch size for call
+                let step = 76;
+                for amm_chunk in amms.chunks_mut(step) {
+                    camelot_v3::batch_request::get_amm_data_batch_request(
+                        amm_chunk,
+                        block_number,
+                        provider.clone(),
+                    )
+                    .await?;
+                }
+            }
             // TODO: Implement batch request
             AMM::ERC4626Vault(_) => {
                 for amm in amms {
