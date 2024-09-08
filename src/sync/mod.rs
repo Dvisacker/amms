@@ -32,8 +32,6 @@ where
     N: Network,
     P: Provider<T, N> + 'static,
 {
-    tracing::info!(?step, ?factories, "Syncing AMMs");
-
     let current_block = provider.get_block_number().await?;
 
     // Aggregate the populated pools from each thread
@@ -46,7 +44,8 @@ where
             .get_all_amms(Some(current_block), provider.clone(), step)
             .await?;
 
-        tracing::info!(?factory, "Populating AMMs from factory");
+        tracing::info!("Populating {:?} AMMs from factory", amms.len());
+
         populate_amms(&mut amms, current_block, provider.clone()).await?;
 
         amms = filters::filter_empty_amms(amms);
@@ -99,12 +98,16 @@ where
     N: Network,
     P: Provider<T, N>,
 {
+    if amms.is_empty() {
+        return Ok(());
+    }
+
     if amms_are_congruent(amms) {
         match amms[0] {
             AMM::UniswapV2Pool(_) => {
-                // Max batch size for call
                 let step = 127;
                 for amm_chunk in amms.chunks_mut(step) {
+                    tracing::info!("Populating uniswap v2 amms chunk");
                     uniswap_v2::batch_request::get_amm_data_batch_request(
                         amm_chunk,
                         provider.clone(),
@@ -114,7 +117,6 @@ where
             }
 
             AMM::UniswapV3Pool(_) => {
-                // Max batch size for call
                 let step = 76;
                 for amm_chunk in amms.chunks_mut(step) {
                     uniswap_v3::batch_request::get_amm_data_batch_request(
@@ -127,7 +129,6 @@ where
             }
 
             AMM::CamelotV3Pool(_) => {
-                // Max batch size for call
                 let step = 76;
                 for amm_chunk in amms.chunks_mut(step) {
                     camelot_v3::batch_request::get_amm_data_batch_request(

@@ -65,6 +65,8 @@ impl UniswapV2Factory {
             length: pairs_length,
         } = factory.allPairsLength().call().await?;
 
+        tracing::info!("Found {:?} pairs", pairs_length.to::<usize>());
+
         let mut pairs = vec![];
         // NOTE: max batch size for this call until codesize is too large
         let step = 766;
@@ -76,6 +78,7 @@ impl UniswapV2Factory {
         };
 
         for _ in (0..pairs_length.to::<usize>()).step_by(step) {
+            tracing::info!("Getting pairs from index {:?} to {:?}", idx_from, idx_to);
             pairs.append(
                 &mut batch_request::get_pairs_batch_request(
                     self.address,
