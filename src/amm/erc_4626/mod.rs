@@ -145,6 +145,7 @@ impl AutomatedMarketMaker for ERC4626Vault {
         &self,
         token_in: Address,
         amount_in: U256,
+        _token_out: Address,
     ) -> Result<U256, SwapSimulationError> {
         if self.vault_token == token_in {
             Ok(self.get_amount_out(amount_in, self.vault_reserve, self.asset_reserve))
@@ -157,6 +158,7 @@ impl AutomatedMarketMaker for ERC4626Vault {
         &mut self,
         token_in: Address,
         amount_in: U256,
+        _token_out: Address,
     ) -> Result<U256, SwapSimulationError> {
         if self.vault_token == token_in {
             let amount_out = self.get_amount_out(amount_in, self.vault_reserve, self.asset_reserve);
@@ -175,13 +177,13 @@ impl AutomatedMarketMaker for ERC4626Vault {
         }
     }
 
-    fn get_token_out(&self, token_in: Address) -> Address {
-        if self.vault_token == token_in {
-            self.asset_token
-        } else {
-            self.vault_token
-        }
-    }
+    // fn get_token_out(&self, token_in: Address) -> Address {
+    //     if self.vault_token == token_in {
+    //         self.asset_token
+    //     } else {
+    //         self.vault_token
+    //     }
+    // }
 
     fn token_symbols(&self) -> Vec<String> {
         vec![
@@ -495,10 +497,18 @@ mod tests {
         vault.asset_reserve = U256::from(505434849031054568651911_u128);
 
         let assets_out = vault
-            .simulate_swap(vault.vault_token, U256::from(3000000000000000000_u128))
+            .simulate_swap(
+                vault.vault_token,
+                U256::from(3000000000000000000_u128),
+                vault.asset_token,
+            )
             .unwrap();
         let shares_out = vault
-            .simulate_swap(vault.asset_token, U256::from(3000000000000000000_u128))
+            .simulate_swap(
+                vault.asset_token,
+                U256::from(3000000000000000000_u128),
+                vault.vault_token,
+            )
             .unwrap();
 
         assert_eq!(assets_out, U256::from(3021066711791496478_u128));

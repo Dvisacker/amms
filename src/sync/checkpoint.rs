@@ -207,6 +207,7 @@ where
 
         AMM::ERC4626Vault(_) => None,
         AMM::CamelotV3Pool(_) => None,
+        AMM::CurvePool(_) => None,
     };
 
     // Spawn a new thread to get all pools and sync data for each dex

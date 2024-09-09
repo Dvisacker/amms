@@ -134,6 +134,7 @@ impl AutomatedMarketMaker for UniswapV2Pool {
         &self,
         token_in: Address,
         amount_in: U256,
+        token_out: Address,
     ) -> Result<U256, SwapSimulationError> {
         if self.token_a == token_in {
             Ok(self.get_amount_out(
@@ -154,6 +155,7 @@ impl AutomatedMarketMaker for UniswapV2Pool {
         &mut self,
         token_in: Address,
         amount_in: U256,
+        token_out: Address,
     ) -> Result<U256, SwapSimulationError> {
         if self.token_a == token_in {
             let amount_out = self.get_amount_out(
@@ -190,13 +192,13 @@ impl AutomatedMarketMaker for UniswapV2Pool {
         }
     }
 
-    fn get_token_out(&self, token_in: Address) -> Address {
-        if self.token_a == token_in {
-            self.token_b
-        } else {
-            self.token_a
-        }
-    }
+    // fn get_token_out(&self, token_in: Address) -> Address {
+    //     if self.token_a == token_in {
+    //         self.token_b
+    //     } else {
+    //         self.token_a
+    //     }
+    // }
 
     fn token_symbols(&self) -> Vec<String> {
         vec![self.token_a_symbol.clone(), self.token_b_symbol.clone()]

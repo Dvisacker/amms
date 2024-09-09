@@ -179,6 +179,7 @@ impl AutomatedMarketMaker for CamelotV3Pool {
         &self,
         token_in: Address,
         amount_in: U256,
+        _token_out: Address,
     ) -> Result<U256, SwapSimulationError> {
         if amount_in.is_zero() {
             return Ok(U256::ZERO);
@@ -316,6 +317,7 @@ impl AutomatedMarketMaker for CamelotV3Pool {
         &mut self,
         token_in: Address,
         amount_in: U256,
+        _token_out: Address,
     ) -> Result<U256, SwapSimulationError> {
         if amount_in.is_zero() {
             return Ok(U256::ZERO);
@@ -459,14 +461,6 @@ impl AutomatedMarketMaker for CamelotV3Pool {
         Ok(amount_out)
     }
 
-    fn get_token_out(&self, token_in: Address) -> Address {
-        if self.token_a == token_in {
-            self.token_b
-        } else {
-            self.token_a
-        }
-    }
-
     fn token_symbols(&self) -> Vec<String> {
         vec![self.token_a_symbol.clone(), self.token_b_symbol.clone()]
     }
@@ -523,6 +517,14 @@ impl CamelotV3Pool {
             exchange_name,
             exchange_type,
             chain,
+        }
+    }
+
+    fn get_token_out(&self, token_in: Address) -> Address {
+        if self.token_a == token_in {
+            self.token_b
+        } else {
+            self.token_a
         }
     }
 

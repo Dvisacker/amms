@@ -28,6 +28,11 @@ pub fn filter_empty_amms(amms: Vec<AMM>) -> Vec<AMM> {
                     cleaned_amms.push(amm)
                 }
             }
+            AMM::CurvePool(ref curve_pool) => {
+                if !curve_pool.coins.is_empty() && !curve_pool.balances.is_empty() {
+                    cleaned_amms.push(amm)
+                }
+            }
         }
     }
 

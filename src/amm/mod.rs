@@ -1,6 +1,7 @@
 pub mod camelot_v3;
 pub mod common;
 pub mod consts;
+pub mod curve;
 pub mod erc_4626;
 pub mod factory;
 pub mod uniswap_v2;
@@ -27,7 +28,7 @@ use types::exchange::{ExchangeName, ExchangeType};
 use crate::errors::{AMMError, ArithmeticError, EventLogError, SwapSimulationError};
 
 use self::{
-    camelot_v3::CamelotV3Pool, erc_4626::ERC4626Vault, uniswap_v2::UniswapV2Pool,
+    camelot_v3::CamelotV3Pool, curve::CurvePool, erc_4626::ERC4626Vault, uniswap_v2::UniswapV2Pool,
     uniswap_v3::UniswapV3Pool,
 };
 
@@ -85,6 +86,7 @@ pub trait AutomatedMarketMaker {
         &self,
         token_in: Address,
         amount_in: U256,
+        token_out: Address,
     ) -> Result<U256, SwapSimulationError>;
 
     /// Locally simulates a swap in the AMM.
@@ -94,10 +96,11 @@ pub trait AutomatedMarketMaker {
         &mut self,
         token_in: Address,
         amount_in: U256,
+        token_out: Address,
     ) -> Result<U256, SwapSimulationError>;
 
     /// Returns the token out of the AMM for a given `token_in`.
-    fn get_token_out(&self, token_in: Address) -> Address;
+    // fn get_token_out(&self, token_in: Address) -> Address;
 
     fn exchange_name(&self) -> ExchangeName;
     fn exchange_type(&self) -> ExchangeType;
@@ -144,23 +147,23 @@ macro_rules! amm {
                 }
             }
 
-            fn simulate_swap(&self, token_in: Address, amount_in: U256) -> Result<U256, SwapSimulationError> {
+            fn simulate_swap(&self, token_in: Address, amount_in: U256, token_out: Address) -> Result<U256, SwapSimulationError> {
                 match self {
-                    $(AMM::$pool_type(pool) => pool.simulate_swap(token_in, amount_in),)+
+                    $(AMM::$pool_type(pool) => pool.simulate_swap(token_in, amount_in, token_out),)+
                 }
             }
 
-            fn simulate_swap_mut(&mut self, token_in: Address, amount_in: U256) -> Result<U256, SwapSimulationError> {
+            fn simulate_swap_mut(&mut self, token_in: Address, amount_in: U256, token_out: Address) -> Result<U256, SwapSimulationError> {
                 match self {
-                    $(AMM::$pool_type(pool) => pool.simulate_swap_mut(token_in, amount_in),)+
+                    $(AMM::$pool_type(pool) => pool.simulate_swap_mut(token_in, amount_in, token_out),)+
                 }
             }
 
-            fn get_token_out(&self, token_in: Address) -> Address {
-                match self {
-                    $(AMM::$pool_type(pool) => pool.get_token_out(token_in),)+
-                }
-            }
+            // fn get_token_out(&self, token_in: Address) -> Address {
+            //     match self {
+            //         $(AMM::$pool_type(pool) => pool.get_token_out(token_in),)+
+            //     }
+            // }
 
             async fn populate_data<T, N, P>(&mut self, block_number: Option<u64>, middleware: Arc<P>) -> Result<(), AMMError>
             where
@@ -236,4 +239,10 @@ macro_rules! amm {
     };
 }
 
-amm!(UniswapV2Pool, UniswapV3Pool, ERC4626Vault, CamelotV3Pool);
+amm!(
+    UniswapV2Pool,
+    UniswapV3Pool,
+    ERC4626Vault,
+    CamelotV3Pool,
+    CurvePool
+);
