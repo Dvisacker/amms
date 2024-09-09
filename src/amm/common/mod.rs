@@ -95,8 +95,6 @@ where
                         if let Some(detailed_pool) =
                             populate_pool_data_from_tokens(pool.to_owned(), pool_data)
                         {
-                            tracing::trace!(?detailed_pool);
-                            println!("Detailed pool: {:?}", detailed_pool);
                             *pool = detailed_pool;
                         }
                     }

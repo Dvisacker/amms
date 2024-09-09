@@ -97,8 +97,14 @@ contract GetDetailedPoolDataBatchRequest {
                 poolData.tokenA.call{gas: 20000}(abi.encodeWithSignature("symbol()"));
 
             if (tokenASymbolSuccess) {
-                string memory symbol = abi.decode(tokenASymbolData, (string));
-                poolData.tokenASymbol = stringToBytes32(symbol);
+                bytes32 symbol;
+                if (tokenASymbolData.length == 32) {
+                    symbol = abi.decode(tokenASymbolData, (bytes32));
+                } else {
+                    string memory symbolString = abi.decode(tokenASymbolData, (string));
+                    symbol = stringToBytes32(symbolString);
+                }
+                poolData.tokenASymbol = symbol;
             } else {
                 poolData.tokenASymbol = bytes32(0);
             }
@@ -107,8 +113,14 @@ contract GetDetailedPoolDataBatchRequest {
                 poolData.tokenB.call{gas: 20000}(abi.encodeWithSignature("symbol()"));
 
             if (tokenBSymbolSuccess) {
-                string memory symbol = abi.decode(tokenBSymbolData, (string));
-                poolData.tokenBSymbol = stringToBytes32(symbol);
+                bytes32 symbol;
+                if (tokenBSymbolData.length == 32) {
+                    symbol = abi.decode(tokenBSymbolData, (bytes32));
+                } else {
+                    string memory symbolString = abi.decode(tokenBSymbolData, (string));
+                    symbol = stringToBytes32(symbolString);
+                }
+                poolData.tokenBSymbol = symbol;
             } else {
                 poolData.tokenBSymbol = bytes32(0);
             }
