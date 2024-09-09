@@ -520,7 +520,7 @@ impl CamelotV3Pool {
         }
     }
 
-    fn get_token_out(&self, token_in: Address) -> Address {
+    pub fn get_token_out(&self, token_in: Address) -> Address {
         if self.token_a == token_in {
             self.token_b
         } else {
@@ -1153,11 +1153,11 @@ impl CamelotV3Pool {
         self.exchange_name
     }
 
-    fn exchange_type(&self) -> ExchangeType {
+    pub fn exchange_type(&self) -> ExchangeType {
         self.exchange_type
     }
 
-    fn chain(&self) -> NamedChain {
+    pub fn chain(&self) -> NamedChain {
         self.chain
     }
 }

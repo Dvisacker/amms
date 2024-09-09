@@ -78,6 +78,10 @@ pub enum ArithmeticError {
 pub enum EventLogError {
     #[error("Invalid event signature")]
     InvalidEventSignature,
+    #[error("Invalid event data")]
+    InvalidEventData,
+    #[error("Arithmetic error")]
+    ArithmeticError,
     #[error("Log Block number not found")]
     LogBlockNumberNotFound,
     #[error(transparent)]
@@ -94,6 +98,8 @@ pub enum SwapSimulationError {
     UniswapV3MathError(#[from] UniswapV3MathError),
     #[error("Liquidity underflow")]
     LiquidityUnderflow,
+    #[error("Curve swap error")]
+    CurveSwapError,
 }
 
 #[derive(Error, Debug)]

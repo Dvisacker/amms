@@ -53,13 +53,13 @@ tokio = { version = "1.38", default-features = false, features = [
 ] }
 alloy = { version = "0.2", features = ["rpc-client"] }
 
-[[bench]]
-name = "state_space"
-harness = false
+# [[bench]]
+# name = "state_space"
+# harness = false
 
-[[bench]]
-name = "uniswapv2_simulate"
-harness = false
+# [[bench]]
+# name = "uniswapv2_simulate"
+# harness = false
 
 [profile.release]
 opt-level = 3

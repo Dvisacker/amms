@@ -316,7 +316,7 @@ impl AutomatedMarketMaker for UniswapV3Pool {
         &mut self,
         token_in: Address,
         amount_in: U256,
-        token_out: Address,
+        _token_out: Address,
     ) -> Result<U256, SwapSimulationError> {
         if amount_in.is_zero() {
             return Ok(U256::ZERO);
@@ -527,7 +527,7 @@ impl UniswapV3Pool {
         }
     }
 
-    fn get_token_out(&self, token_in: Address) -> Address {
+    pub fn get_token_out(&self, token_in: Address) -> Address {
         if self.token_a == token_in {
             self.token_b
         } else {
@@ -1154,19 +1154,19 @@ impl UniswapV3Pool {
         .into())
     }
 
-    fn token_symbols(&self) -> Vec<String> {
+    pub fn token_symbols(&self) -> Vec<String> {
         vec![self.token_a_symbol.clone(), self.token_b_symbol.clone()]
     }
 
-    fn exchange_name(&self) -> ExchangeName {
+    pub fn exchange_name(&self) -> ExchangeName {
         self.exchange_name
     }
 
-    fn exchange_type(&self) -> ExchangeType {
+    pub fn exchange_type(&self) -> ExchangeType {
         self.exchange_type
     }
 
-    fn chain(&self) -> NamedChain {
+    pub fn chain(&self) -> NamedChain {
         self.chain
     }
 }
