@@ -7,7 +7,7 @@ use crate::{
 };
 use alloy::{
     network::Network,
-    primitives::{Address, Bytes, B256, I256, U256},
+    primitives::{aliases::I24, Address, Bytes, B256, I256, U256},
     providers::Provider,
     rpc::types::eth::{Filter, Log},
     sol,
@@ -765,7 +765,7 @@ impl CamelotV3Pool {
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
         let ICamelotV3Pool::tickSpacingReturn { _0: ts } = v3_pool.tickSpacing().call().await?;
-        Ok(ts)
+        Ok(ts.unchecked_into())
     }
 
     /// Fetches the current tick of the pool via static call.
@@ -791,15 +791,15 @@ impl CamelotV3Pool {
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider.clone());
 
-        let tick_info = v3_pool.ticks(tick).call().await?;
+        let tick_info = v3_pool.ticks(I24::unchecked_from(tick)).call().await?;
 
         Ok((
             tick_info._0,
             tick_info._1,
             tick_info._2,
             tick_info._3,
-            tick_info._4,
-            tick_info._5,
+            tick_info._4.unchecked_into(),
+            U256::from(tick_info._5),
             tick_info._6,
             tick_info._7,
         ))
@@ -846,7 +846,16 @@ impl CamelotV3Pool {
         P: Provider<T, N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
-        Ok(v3_pool.slot0().call().await?.into())
+        let ICamelotV3Pool::slot0Return {
+            _0,
+            _1,
+            _2,
+            _3,
+            _4,
+            _5,
+            _6,
+        } = v3_pool.slot0().call().await?;
+        Ok((_0.to(), _1.unchecked_into(), _2, _3, _4, _5, _6))
     }
 
     /// Fetches the current liquidity of the pool via static call.
@@ -876,8 +885,8 @@ impl CamelotV3Pool {
         let burn_event = ICamelotV3Pool::Burn::decode_log(log.as_ref(), true)?;
 
         self.modify_position(
-            burn_event.tickLower,
-            burn_event.tickUpper,
+            burn_event.tickLower.unchecked_into(),
+            burn_event.tickUpper.unchecked_into(),
             -(burn_event.amount as i128),
         );
 
@@ -891,8 +900,8 @@ impl CamelotV3Pool {
         let mint_event = ICamelotV3Pool::Mint::decode_log(log.as_ref(), true)?;
 
         self.modify_position(
-            mint_event.tickLower,
-            mint_event.tickUpper,
+            mint_event.tickLower.unchecked_into(),
+            mint_event.tickUpper.unchecked_into(),
             mint_event.amount as i128,
         );
 
@@ -998,9 +1007,9 @@ impl CamelotV3Pool {
     pub fn sync_from_swap_log(&mut self, log: Log) -> Result<(), alloy::sol_types::Error> {
         let swap_event = ICamelotV3Pool::Swap::decode_log(log.as_ref(), true)?;
 
-        self.sqrt_price = swap_event.sqrtPriceX96;
+        self.sqrt_price = swap_event.sqrtPriceX96.to();
         self.liquidity = swap_event.liquidity;
-        self.tick = swap_event.tick;
+        self.tick = swap_event.tick.unchecked_into();
 
         tracing::debug!(?swap_event, address = ?self.address, sqrt_price = ?self.sqrt_price, liquidity = ?self.liquidity, tick = ?self.tick, "UniswapV3 swap event");
 
@@ -1044,7 +1053,7 @@ impl CamelotV3Pool {
             .call()
             .await?;
 
-        Ok(fee)
+        Ok(fee.to())
     }
 
     pub async fn get_token_0<T, N, P>(&self, provider: Arc<P>) -> Result<Address, AMMError>
@@ -1138,7 +1147,7 @@ impl CamelotV3Pool {
             recipient,
             zeroForOne: zero_for_one,
             amountSpecified: amount_specified,
-            sqrtPriceLimitX96: sqrt_price_limit_x_96,
+            sqrtPriceLimitX96: sqrt_price_limit_x_96.to(),
             data: calldata.into(),
         }
         .abi_encode()

@@ -133,7 +133,7 @@ impl AutomatedMarketMakerFactory for UniswapV3Factory {
             token_b_decimals: 0,
             token_a_symbol: String::new(),
             token_b_symbol: String::new(),
-            fee: pool_created_event.fee,
+            fee: pool_created_event.fee.to::<u32>(),
             liquidity: 0,
             sqrt_price: U256::ZERO,
             tick_spacing: 0,

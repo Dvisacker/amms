@@ -22,19 +22,14 @@ regex = "1.10"
 serde = "1.0"
 serde_json = "1.0"
 thiserror = "1.0"
-tokio = { version = "1.38", default-features = false }
+tokio = { version = "1.40.0", default-features = false }
 tracing = "0.1"
-uniswap_v3_math = "0.5.1"
-alloy = { version = "0.2", features = [
-    "contract",
-    "network",
-    "provider-ws",
-    "rpc-types-eth",
-    "signer-local",
-] }
+# uniswap_v3_math = { git = "https://github.com/dvisacker/uniswap-v3-math.git", branch = "main" } 
+uniswap_v3_math = { workspace = true }
+alloy = { workspace = true}
+alloy-chains = { workspace = true }
 db = { path = "../db" }
 types = { path = "../types" }
-alloy-chains = "0.1.27"
 
 [features]
 default = ["filters", "state-space"]
@@ -48,10 +43,9 @@ artemis = []
 rand = "0.8.5"
 tracing-subscriber = "0.3"
 criterion = "0.5"
-tokio = { version = "1.38", default-features = false, features = [
+tokio = { version = "1.40.0", default-features = false, features = [
     "rt-multi-thread",
 ] }
-alloy = { version = "0.2", features = ["rpc-client"] }
 
 # [[bench]]
 # name = "state_space"
