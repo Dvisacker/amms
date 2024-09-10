@@ -3,16 +3,24 @@ name = "amms"
 version = "0.6.3"
 edition = "2021"
 license = "MIT"
-description = "A library to interact with automated market makers across EVM chains."
+description = "A modified amms-rs"
 readme = "README.md"
-homepage = "https://github.com/darkforestry/amms-rs"
-repository = "https://github.com/darkforestry/amms-rs"
+homepage = "https://github.com/dvisacker/amms"
+repository = "https://github.com/dvisacker/amms"
 keywords = ["ethereum", "amm", "mev"]
 exclude = ["target/*", ".github/*", ".gitignore"]
 
 [dependencies]
+tokio = { workspace = true }
+uniswap_v3_math = { workspace = true }
+alloy = { workspace = true}
+alloy-chains = { workspace = true }
+tracing = { workspace = true }
+
+db = { path = "../db" }
+types = { path = "../types" }
+
 arraydeque = { version = "0.5", optional = true }
-# artemis-core = { git = "https://github.com/paradigmxyz/artemis.git", branch = "main", optional = true }
 async-trait = "0.1"
 eyre = "0.6"
 futures = "0.3"
@@ -22,21 +30,11 @@ regex = "1.10"
 serde = "1.0"
 serde_json = "1.0"
 thiserror = "1.0"
-tokio = { version = "1.40.0", default-features = false }
-tracing = "0.1"
-# uniswap_v3_math = { git = "https://github.com/dvisacker/uniswap-v3-math.git", branch = "main" } 
-uniswap_v3_math = { workspace = true }
-alloy = { workspace = true}
-alloy-chains = { workspace = true }
-db = { path = "../db" }
-types = { path = "../types" }
 
 [features]
 default = ["filters", "state-space"]
 filters = []
 state-space = ["arraydeque"]
-# TODO: Uncomment this when artemis is published as a crate
-# artemis = ["artemis-core"] 
 artemis = []
 
 [dev-dependencies]
