@@ -45,7 +45,6 @@ where
     P: Provider<T, N>,
 {
     let weth_usd_price = usd_weth_pool.calculate_price(weth)?;
-    println!("Weth usd price: {:?}", weth_usd_price);
 
     // Init a new vec to hold the filtered AMMs
     let mut filtered_amms = vec![];
@@ -59,10 +58,9 @@ where
         provider,
     )
     .await?;
-    println!("Weth values in pools: {:?}", weth_values_in_pools);
 
     for (i, weth_value) in weth_values_in_pools.iter().enumerate() {
-        println!(
+        tracing::debug!(
             "Pool address: {:?}. WETH value: {:?}",
             amms[i].address(),
             weth_value / U256_10_POW_18
@@ -76,7 +74,7 @@ where
             1_000_000_000_000_000_000, // Fourth limb (10^18)
         ]);
         if weth_value > &large_value {
-            println!("Large weth value: {:?}", weth_value);
+            tracing::warn!("Large weth value: {:?}", weth_value);
             continue;
         }
 
@@ -150,9 +148,10 @@ where
     let mut idx_to = if step > amms.len() { amms.len() } else { step };
 
     for _ in (0..amms.len()).step_by(step) {
-        println!(
+        tracing::debug!(
             "Getting weth values in amms batch {:?} to {:?}",
-            idx_from, idx_to
+            idx_from,
+            idx_to
         );
         let weth_values_in_amms = get_weth_value_in_amm_batch_request(
             &amms[idx_from..idx_to],
