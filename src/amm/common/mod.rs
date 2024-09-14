@@ -7,15 +7,15 @@ use alloy::{
     transports::Transport,
 };
 use std::sync::Arc;
-use types::pool::DetailedPool;
+use types::standard_pool::StandardPool;
 
 use crate::errors::AMMError;
 
 sol! {
     #[allow(missing_docs)]
     #[sol(rpc)]
-    IGetDetailedPoolDataBatchRequest,
-    "src/amm/common/batch_request/GetDetailedPoolDataBatchRequestABI.json"
+    IGetStandardPoolDataBatchRequest,
+    "src/amm/common/batch_request/GetStandardPoolDataBatchRequestABI.json"
 }
 
 pub async fn fetch_pool_data_batch_request<T, N, P>(
@@ -27,7 +27,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetDetailedPoolDataBatchRequest::deploy_builder(provider, addresses);
+    let deployer = IGetStandardPoolDataBatchRequest::deploy_builder(provider, addresses);
     let res = deployer.call().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
@@ -43,13 +43,13 @@ where
         DynSolType::Uint(24),       //fee
     ])));
 
-    let return_data_tokens = constructor_return.abi_decode_sequence(&res)?;
+    let data = constructor_return.abi_decode_sequence(&res)?;
 
-    Ok(return_data_tokens)
+    Ok(data)
 }
 
-pub async fn get_detailed_pool_data_batch_request<T, N, P>(
-    amms: &mut [DetailedPool],
+pub async fn get_standard_pool_data_batch_request<T, N, P>(
+    amms: &mut [StandardPool],
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
@@ -62,7 +62,7 @@ where
         target_addresses.push(amm.address);
     }
 
-    let deployer = IGetDetailedPoolDataBatchRequest::deploy_builder(provider, target_addresses);
+    let deployer = IGetStandardPoolDataBatchRequest::deploy_builder(provider, target_addresses);
     let res = deployer.call().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
@@ -110,9 +110,9 @@ where
 
 #[inline]
 fn populate_pool_data_from_tokens(
-    mut pool: DetailedPool,
+    mut pool: StandardPool,
     tokens: &[DynSolValue],
-) -> Option<DetailedPool> {
+) -> Option<StandardPool> {
     pool.address = pool.address;
     pool.token_a = tokens[0].as_address()?;
     pool.token_a_symbol = bytes32_to_string(tokens[1].as_fixed_bytes()?.0);

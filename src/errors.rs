@@ -56,6 +56,8 @@ pub enum AMMError {
     CheckpointError(#[from] CheckpointError),
     #[error(transparent)]
     EyreError(#[from] eyre::Error),
+    #[error("Unknown pool type")]
+    UnknownPoolType,
 }
 
 #[derive(Error, Debug)]

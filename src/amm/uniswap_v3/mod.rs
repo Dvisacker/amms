@@ -48,6 +48,7 @@ sol! {
         function ticks(int24 tick) external view returns (uint128, int128, uint256, uint256, int56, uint160, uint32, bool);
         function tickBitmap(int16 wordPosition) external view returns (uint256);
         function swap(address recipient, bool zeroForOne, int256 amountSpecified, uint160 sqrtPriceLimitX96, bytes calldata data) external returns (int256, int256);
+        function factory() external view returns (address);
     }
 }
 
@@ -535,6 +536,30 @@ impl UniswapV3Pool {
         }
     }
 
+    pub async fn new_empty(address: Address, chain: NamedChain) -> Result<Self, AMMError> {
+        let pool = UniswapV3Pool {
+            address,
+            token_a: Address::ZERO,
+            token_a_decimals: 0,
+            token_a_symbol: String::new(),
+            token_b: Address::ZERO,
+            token_b_decimals: 0,
+            token_b_symbol: String::new(),
+            liquidity: 0,
+            sqrt_price: U256::ZERO,
+            tick: 0,
+            tick_spacing: 0,
+            fee: 0,
+            tick_bitmap: HashMap::new(),
+            ticks: HashMap::new(),
+            exchange_name: ExchangeName::Unknown,
+            exchange_type: ExchangeType::Unknown,
+            chain,
+        };
+
+        Ok(pool)
+    }
+
     /// Creates a new instance of the pool from the pair address.
     ///
     /// This function will populate all pool data.
@@ -569,13 +594,16 @@ impl UniswapV3Pool {
         };
 
         // We need to get tick spacing before populating tick data because tick spacing can not be uninitialized when syncing burn and mint logs
+        tracing::info!("Getting tick spacing");
         pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
 
+        tracing::info!("Populating tick data");
         let synced_block = pool
             .populate_tick_data(creation_block, provider.clone())
             .await?;
 
         // TODO: break this into two threads so it can happen concurrently
+        tracing::info!("Populating data");
         pool.populate_data(Some(synced_block), provider).await?;
 
         if !pool.data_is_populated() {
@@ -670,6 +698,8 @@ impl UniswapV3Pool {
 
         while from_block <= current_block {
             let middleware = provider.clone();
+
+            tracing::info!("Getting logs from block {:?}", from_block);
 
             let mut target_block = from_block + POPULATE_TICK_DATA_STEP - 1;
             if target_block > current_block {

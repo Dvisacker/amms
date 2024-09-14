@@ -106,7 +106,6 @@ pub trait AutomatedMarketMaker {
     fn exchange_name(&self) -> ExchangeName;
     fn exchange_type(&self) -> ExchangeType;
     fn chain(&self) -> NamedChain;
-
     fn name(&self) -> String;
 }
 
