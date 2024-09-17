@@ -16,6 +16,7 @@ uniswap_v3_math = { workspace = true }
 alloy = { workspace = true}
 alloy-chains = { workspace = true }
 tracing = { workspace = true }
+async-recursion = { workspace = true }
 
 db = { path = "../db" }
 types = { path = "../types" }

@@ -8,6 +8,8 @@ use uniswap_v3_math::error::UniswapV3MathError;
 
 #[derive(Error, Debug)]
 pub enum AMMError {
+    #[error("Provider error")]
+    ProviderError,
     #[error(transparent)]
     TransportError(#[from] TransportError),
     #[error(transparent)]

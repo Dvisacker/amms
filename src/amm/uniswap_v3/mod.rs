@@ -15,6 +15,7 @@ use alloy::{
     transports::Transport,
 };
 use alloy_chains::NamedChain;
+use async_recursion::async_recursion;
 use async_trait::async_trait;
 use futures::{stream::FuturesOrdered, StreamExt};
 use num_bigfloat::BigFloat;
@@ -28,6 +29,8 @@ use tracing::instrument;
 use types::chain_serde;
 use types::exchange::{ExchangeName, ExchangeType};
 use uniswap_v3_math::tick_math::{MAX_SQRT_RATIO, MAX_TICK, MIN_SQRT_RATIO, MIN_TICK};
+
+pub const POPULATE_TICK_DATA_STEP: u64 = 100000;
 
 use self::factory::IUniswapV3Factory;
 
@@ -672,6 +675,132 @@ impl UniswapV3Pool {
         }
     }
 
+    #[async_recursion]
+    pub async fn get_batch_logs<T, N, P>(
+        provider: Arc<P>,
+        address: Address,
+        from_block: u64,
+        to_block: u64,
+    ) -> Result<Vec<Log>, AMMError>
+    where
+        T: Transport + Clone,
+        N: Network,
+        P: Provider<T, N>,
+    {
+        let mut logs = vec![];
+        let mut step_block = to_block - from_block;
+        let filter = Filter::new()
+            .event_signature(vec![
+                IUniswapV3Pool::Burn::SIGNATURE_HASH,
+                IUniswapV3Pool::Mint::SIGNATURE_HASH,
+            ])
+            .address(address)
+            .from_block(from_block)
+            .to_block(to_block);
+        let res = provider.get_logs(&filter).await;
+        if res.is_err() {
+            if step_block == 0 {
+                return Err(AMMError::TransportError(res.err().unwrap()));
+            }
+            tracing::debug!(
+                "addr: {:?}, start_block: {}, end_block: {}, step: {}, err: {:?}",
+                address,
+                from_block,
+                to_block,
+                step_block,
+                res.err()
+            );
+            step_block /= 2;
+            let left_lgos = Self::get_batch_logs(
+                provider.clone(),
+                address,
+                from_block,
+                from_block + step_block,
+            )
+            .await?;
+            let right_logs = Self::get_batch_logs(
+                provider.clone(),
+                address,
+                from_block + step_block + 1,
+                to_block,
+            )
+            .await?;
+            logs.extend(left_lgos);
+            logs.extend(right_logs);
+        } else {
+            logs = res.unwrap();
+            tracing::debug!(
+                "addr: {:?}, start_block: {}, end_block: {}, step: {}, logs: {:?}",
+                address,
+                from_block,
+                to_block,
+                step_block,
+                logs.len()
+            );
+        }
+        Ok(logs)
+    }
+
+    /// Populates the `tick_bitmap` and `ticks` fields of the pool to the current block.
+    ///
+    /// Returns the last synced block number.
+    pub async fn populate_tick_data_sync<T, N, P>(
+        &mut self,
+        mut from_block: u64,
+        provider: Arc<P>,
+    ) -> Result<u64, AMMError>
+    where
+        T: Transport + Clone,
+        N: Network,
+        P: Provider<T, N>,
+    {
+        let current_block = provider
+            .get_block_number()
+            .await
+            .map_err(AMMError::TransportError)?;
+
+        let mut ordered_logs: BTreeMap<u64, Vec<Log>> = BTreeMap::new();
+        let pool_address: Address = self.address;
+
+        while from_block <= current_block {
+            let provider = provider.clone();
+
+            tracing::info!("Getting logs from block {:?}", from_block);
+
+            let mut target_block = from_block + POPULATE_TICK_DATA_STEP - 1;
+            if target_block > current_block {
+                target_block = current_block;
+            }
+
+            let result =
+                Self::get_batch_logs(provider, pool_address, from_block, target_block).await;
+
+            let logs = result?;
+
+            for log in logs {
+                if let Some(log_block_number) = log.block_number {
+                    if let Some(log_group) = ordered_logs.get_mut(&log_block_number) {
+                        log_group.push(log);
+                    } else {
+                        ordered_logs.insert(log_block_number, vec![log]);
+                    }
+                } else {
+                    return Err(EventLogError::LogBlockNumberNotFound)?;
+                }
+            }
+
+            from_block += POPULATE_TICK_DATA_STEP;
+        }
+
+        for (_, log_group) in ordered_logs {
+            for log in log_group {
+                self.sync_from_log(log)?;
+            }
+        }
+
+        Ok(current_block)
+    }
+
     /// Populates the `tick_bitmap` and `ticks` fields of the pool to the current block.
     ///
     /// Returns the last synced block number.
@@ -697,7 +826,7 @@ impl UniswapV3Pool {
         let pool_address: Address = self.address;
 
         while from_block <= current_block {
-            let middleware = provider.clone();
+            let provider = provider.clone();
 
             tracing::info!("Getting logs from block {:?}", from_block);
 
@@ -707,18 +836,7 @@ impl UniswapV3Pool {
             }
 
             futures.push_back(async move {
-                middleware
-                    .get_logs(
-                        &Filter::new()
-                            .event_signature(vec![
-                                IUniswapV3Pool::Burn::SIGNATURE_HASH,
-                                IUniswapV3Pool::Mint::SIGNATURE_HASH,
-                            ])
-                            .address(pool_address)
-                            .from_block(from_block)
-                            .to_block(target_block),
-                    )
-                    .await
+                Self::get_batch_logs(provider, pool_address, from_block, target_block).await
             });
 
             from_block += POPULATE_TICK_DATA_STEP;
@@ -726,7 +844,7 @@ impl UniswapV3Pool {
 
         // TODO: this could be more dry since we use this in another place
         while let Some(result) = futures.next().await {
-            let logs = result.map_err(AMMError::TransportError)?;
+            let logs = result?;
 
             for log in logs {
                 if let Some(log_block_number) = log.block_number {
@@ -1317,6 +1435,8 @@ mod test {
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
         );
+
+        println!("Pool: {:?}", pool);
 
         let amount_in = U256::from(100000000); // 100 USDC
         let amount_out = pool
