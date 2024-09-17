@@ -146,6 +146,8 @@ where
         I24::unchecked_from(pool.tick_spacing),
     );
 
+    println!("tick_spacing: {}", pool.tick_spacing);
+
     let data = match block_number {
         Some(number) => deployer.block(number.into()).call_raw().await?,
         None => deployer.call_raw().await?,

@@ -17,6 +17,7 @@ use alloy::{
 use alloy_chains::NamedChain;
 use async_recursion::async_recursion;
 use async_trait::async_trait;
+use batch_request::UniswapV3TickData;
 use futures::{stream::FuturesOrdered, StreamExt};
 use num_bigfloat::BigFloat;
 use serde::{Deserialize, Serialize};
@@ -1068,6 +1069,25 @@ impl UniswapV3Pool {
         Ok(())
     }
 
+    pub fn populate_ticks_from_tick_data(&mut self, tick_data: Vec<UniswapV3TickData>) {
+        self.ticks = HashMap::new();
+        self.tick_bitmap = HashMap::new();
+        for tick in tick_data {
+            self.ticks.insert(
+                tick.tick,
+                Info {
+                    liquidity_gross: tick.liquidity_gross,
+                    liquidity_net: tick.liquidity_net,
+                    initialized: tick.initialized,
+                },
+            );
+
+            if tick.initialized {
+                self.flip_tick(tick.tick, self.tick_spacing);
+            }
+        }
+    }
+
     /// Modifies a positions liquidity in the pool.
     pub fn modify_position(&mut self, tick_lower: i32, tick_upper: i32, liquidity_delta: i128) {
         //We are only using this function when a mint or burn event is emitted,
@@ -1368,6 +1388,7 @@ mod test {
         primitives::{address, aliases::U24, U160},
         providers::ProviderBuilder,
     };
+    use batch_request::get_uniswap_v3_tick_data_batch_request;
 
     sol! {
         /// Interface of the Quoter
@@ -1393,10 +1414,25 @@ mod test {
 
         let creation_block = 12369620;
         pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
-        let synced_block = pool
-            .populate_tick_data(creation_block, provider.clone())
+        let synced_block = provider.get_block_number().await?;
+        pool.populate_data(Some(synced_block), provider.clone())
             .await?;
-        pool.populate_data(Some(synced_block), provider).await?;
+        let current_tick = pool.tick;
+        let tick_start = current_tick - 20;
+        let num_ticks = 40;
+        let (tick_data, _) = get_uniswap_v3_tick_data_batch_request(
+            &pool,
+            tick_start,
+            false,
+            num_ticks,
+            Some(synced_block),
+            provider.clone(),
+        )
+        .await?;
+        pool.populate_ticks_from_tick_data(tick_data);
+        // let synced_block = pool
+        //     .populate_tick_data(creation_block, provider.clone())
+        //     .await?;
 
         Ok((pool, synced_block))
     }
@@ -1455,7 +1491,11 @@ mod test {
             .await
             .unwrap();
 
-        assert_eq!(amount_out, expected_amount_out.amountOut);
+        assert_eq!(
+            amount_out, expected_amount_out.amountOut,
+            "invalid amount_out: {}, expected_amount_out: {}",
+            amount_out, expected_amount_out.amountOut
+        );
 
         let amount_in_1 = U256::from(10000000000_u64); // 10_000 USDC
         let amount_out_1 = pool
@@ -1473,8 +1513,11 @@ mod test {
             .call()
             .await
             .unwrap();
-
-        assert_eq!(amount_out_1, expected_amount_out_1.amountOut);
+        assert_eq!(
+            amount_out_1, expected_amount_out_1.amountOut,
+            "invalid amount_out_1: {}, expected_amount_out_1: {}",
+            amount_out_1, expected_amount_out_1.amountOut
+        );
 
         let amount_in_2 = U256::from(10000000000000_u128); // 10_000_000 USDC
         let amount_out_2 = pool
@@ -1493,7 +1536,11 @@ mod test {
             .await
             .unwrap();
 
-        assert_eq!(amount_out_2, expected_amount_out_2.amountOut);
+        assert_eq!(
+            amount_out_2, expected_amount_out_2.amountOut,
+            "invalid amount_out_2: {}, expected_amount_out_2: {}",
+            amount_out_2, expected_amount_out_2.amountOut
+        );
 
         let amount_in_3 = U256::from(100000000000000_u128); // 100_000_000 USDC
         let amount_out_3 = pool
@@ -1512,7 +1559,11 @@ mod test {
             .await
             .unwrap();
 
-        assert_eq!(amount_out_3, expected_amount_out_3.amountOut);
+        assert_eq!(
+            amount_out_3, expected_amount_out_3.amountOut,
+            "invalid amount_out_3: {}, expected_amount_out_3: {}",
+            amount_out_3, expected_amount_out_3.amountOut
+        );
     }
 
     #[tokio::test]
