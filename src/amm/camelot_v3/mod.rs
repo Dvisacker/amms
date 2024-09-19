@@ -16,6 +16,7 @@ use alloy::{
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
+use db::models::{NewDbPool, NewDbUniV3Pool};
 use futures::{stream::FuturesOrdered, StreamExt};
 use num_bigfloat::BigFloat;
 use serde::{Deserialize, Serialize};
@@ -30,6 +31,8 @@ use types::exchange::{ExchangeName, ExchangeType};
 use uniswap_v3_math::tick_math::{MAX_SQRT_RATIO, MAX_TICK, MIN_SQRT_RATIO, MIN_TICK};
 
 use self::factory::ICamelotV3Factory;
+
+use super::uniswap_v3::Info;
 
 sol! {
     /// Interface of the IUniswapV3Pool
@@ -71,23 +74,6 @@ pub struct CamelotV3Pool {
     pub exchange_type: ExchangeType,
     #[serde(with = "chain_serde")]
     pub chain: NamedChain,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct Info {
-    pub liquidity_gross: u128,
-    pub liquidity_net: i128,
-    pub initialized: bool,
-}
-
-impl Info {
-    pub fn new(liquidity_gross: u128, liquidity_net: i128, initialized: bool) -> Self {
-        Info {
-            liquidity_gross,
-            liquidity_net,
-            initialized,
-        }
-    }
 }
 
 #[async_trait]
@@ -475,6 +461,28 @@ impl AutomatedMarketMaker for CamelotV3Pool {
 
     fn chain(&self) -> NamedChain {
         self.chain
+    }
+
+    fn to_new_db_pool(&self) -> NewDbPool {
+        NewDbPool::UniV3(NewDbUniV3Pool {
+            address: self.address.to_string(),
+            chain: self.chain.as_str().to_string(),
+            exchange_name: Some(self.exchange_name.as_str().to_string()),
+            exchange_type: Some(self.exchange_type.as_str().to_string()),
+            token_a: self.token_a.to_string(),
+            token_a_symbol: self.token_a_symbol.clone(),
+            token_a_decimals: self.token_a_decimals as i32,
+            token_b: self.token_b.to_string(),
+            token_b_symbol: self.token_b_symbol.clone(),
+            token_b_decimals: self.token_b_decimals as i32,
+            sqrt_price: Some(self.sqrt_price.to_string()),
+            liquidity: Some(self.liquidity.to_string()),
+            tick: Some(self.tick as i32),
+            fee: Some(self.fee as i32),
+            tick_spacing: Some(self.tick_spacing as i32),
+            tick_bitmap: None,
+            ticks: None,
+        })
     }
 }
 

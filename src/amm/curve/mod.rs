@@ -13,6 +13,7 @@ use alloy::{
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
+use db::models::{NewDbCurvePool, NewDbPool};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::instrument;
@@ -304,6 +305,31 @@ impl AutomatedMarketMaker for CurvePool {
 
     fn chain(&self) -> NamedChain {
         self.chain
+    }
+
+    fn to_new_db_pool(&self) -> NewDbPool {
+        NewDbPool::Curve(NewDbCurvePool {
+            address: self.address.to_string(),
+            chain: self.chain.as_str().to_string(),
+            exchange_name: Some(self.exchange_name.as_str().to_string()),
+            exchange_type: Some(self.exchange_type.as_str().to_string()),
+            token_a: self.coins[0].to_string(),
+            token_a_symbol: self.coin_symbols[0].clone(),
+            token_a_decimals: self.coin_decimals[0] as i32,
+            token_a_balance: self.balances[0].to_string(),
+            token_b: self.coins[1].to_string(),
+            token_b_symbol: self.coin_symbols[1].clone(),
+            token_b_decimals: self.coin_decimals[1] as i32,
+            token_b_balance: self.balances[1].to_string(),
+            token_c: Some(self.coins[2].to_string()),
+            token_c_symbol: Some(self.coin_symbols[2].clone()),
+            token_c_decimals: Some(self.coin_decimals[2] as i32),
+            token_c_balance: Some(self.balances[2].to_string()),
+            token_d: Some(self.coins[3].to_string()),
+            token_d_symbol: Some(self.coin_symbols[3].clone()),
+            token_d_decimals: Some(self.coin_decimals[3] as i32),
+            token_d_balance: Some(self.balances[3].to_string()),
+        })
     }
 }
 

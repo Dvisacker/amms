@@ -13,6 +13,7 @@ use alloy::{
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
+use db::models::{NewDbErc4626Vault, NewDbPool};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 use types::chain_serde;
@@ -202,6 +203,25 @@ impl AutomatedMarketMaker for ERC4626Vault {
 
     fn chain(&self) -> NamedChain {
         self.chain
+    }
+
+    fn to_new_db_pool(&self) -> NewDbPool {
+        NewDbPool::ERC4626Vault(NewDbErc4626Vault {
+            address: self.vault_token.to_string(),
+            chain: self.chain.as_str().to_string(),
+            vault_token: self.vault_token.to_string(),
+            vault_token_decimals: self.vault_token_decimals as i32,
+            vault_token_symbol: self.vault_token_symbol.clone(),
+            asset_token: self.asset_token.to_string(),
+            asset_token_decimals: self.asset_token_decimals as i32,
+            asset_token_symbol: self.asset_token_symbol.clone(),
+            vault_reserve: self.vault_reserve.to_string(),
+            asset_reserve: self.asset_reserve.to_string(),
+            deposit_fee: self.deposit_fee as i32,
+            withdraw_fee: self.withdraw_fee as i32,
+            exchange_name: Some(self.exchange_name.as_str().to_string()),
+            exchange_type: Some(self.exchange_type.as_str().to_string()),
+        })
     }
 }
 

@@ -134,7 +134,7 @@ where
 }
 
 pub async fn get_v2_pool_data_batch_request<T, N, P>(
-    pool: &mut UniswapV2Pool,
+    pools: &mut [UniswapV2Pool],
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
@@ -142,7 +142,12 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetUniswapV2PoolDataBatchRequest::deploy_builder(provider, vec![pool.address]);
+    let mut target_addresses = vec![];
+    for pool in pools.iter() {
+        target_addresses.push(pool.address);
+    }
+
+    let deployer = IGetUniswapV2PoolDataBatchRequest::deploy_builder(provider, target_addresses);
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
@@ -155,14 +160,29 @@ where
     ])));
     let return_data_tokens = constructor_return.abi_decode_sequence(&res)?;
 
+    let mut pool_idx = 0;
     if let Some(tokens_arr) = return_data_tokens.as_array() {
         for token in tokens_arr {
-            let pool_data = token
-                .as_tuple()
-                .ok_or(AMMError::BatchRequestError(pool.address))?;
+            if let Some(pool_data) = token.as_tuple() {
+                // If the pool token A is not zero, signaling that the pool data was polulated
+                if let Some(address) = pool_data[0].as_address() {
+                    if !address.is_zero() {
+                        // Update the pool data
+                        let uniswap_v2_pool = pools
+                            .get_mut(pool_idx)
+                            .expect("Pool idx should be in bounds");
 
-            *pool = populate_pool_data_from_tokens(pool.to_owned(), pool_data)
-                .ok_or(AMMError::BatchRequestError(pool.address))?;
+                        if let Some(pool) =
+                            populate_pool_data_from_tokens(uniswap_v2_pool.to_owned(), pool_data)
+                        {
+                            tracing::trace!(?pool);
+                            *uniswap_v2_pool = pool;
+                        }
+                    }
+                }
+
+                pool_idx += 1;
+            }
         }
     }
 

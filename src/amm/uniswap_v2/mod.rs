@@ -16,6 +16,7 @@ use alloy::{
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
+use db::models::{NewDbPool, NewDbUniV2Pool};
 use num_bigfloat::BigFloat;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -96,7 +97,8 @@ impl AutomatedMarketMaker for UniswapV2Pool {
         N: Network,
         P: Provider<T, N>,
     {
-        batch_request::get_v2_pool_data_batch_request(self, provider.clone()).await?;
+        batch_request::get_v2_pool_data_batch_request(std::slice::from_mut(self), provider.clone())
+            .await?;
 
         Ok(())
     }
@@ -220,6 +222,26 @@ impl AutomatedMarketMaker for UniswapV2Pool {
 
     fn chain(&self) -> NamedChain {
         self.chain
+    }
+
+    fn to_new_db_pool(&self) -> NewDbPool {
+        NewDbPool::UniV2(NewDbUniV2Pool {
+            address: self.address.to_string(),
+            chain: self.chain.as_str().to_string(),
+            exchange_name: self.exchange_name.as_str().to_string(),
+            exchange_type: self.exchange_type.as_str().to_string(),
+            token_a: self.token_a.to_string(),
+            token_a_symbol: self.token_a_symbol.clone(),
+            token_a_decimals: self.token_a_decimals as i32,
+            token_b: self.token_b.to_string(),
+            token_b_symbol: self.token_b_symbol.clone(),
+            token_b_decimals: self.token_b_decimals as i32,
+            reserve_0: self.reserve_0.to_string(),
+            reserve_1: self.reserve_1.to_string(),
+            fee: self.fee as i32,
+            factory_address: "".to_string(),
+            filtered: None,
+        })
     }
 }
 

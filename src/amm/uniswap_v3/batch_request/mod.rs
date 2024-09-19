@@ -56,24 +56,55 @@ sol! {
 
 #[inline]
 fn populate_pool_data_from_tokens(
-    mut pool: UniswapV3Pool,
+    pool: &mut UniswapV3Pool,
     tokens: &[DynSolValue],
-) -> Option<UniswapV3Pool> {
-    pool.token_a = tokens[0].as_address()?;
-    pool.token_a_decimals = tokens[1].as_uint()?.0.to::<u8>();
-    pool.token_b = tokens[2].as_address()?;
-    pool.token_b_decimals = tokens[3].as_uint()?.0.to::<u8>();
-    pool.liquidity = tokens[4].as_uint()?.0.to::<u128>();
-    pool.sqrt_price = tokens[5].as_uint()?.0;
-    pool.tick = tokens[6].as_int()?.0.as_i32();
-    pool.tick_spacing = tokens[7].as_int()?.0.as_i32();
-    pool.fee = tokens[8].as_uint()?.0.to::<u32>();
+) -> Result<(), AMMError> {
+    pool.token_a = tokens[0]
+        .as_address()
+        .ok_or(AMMError::BatchRequestError(pool.address))?;
+    pool.token_a_decimals = tokens[1]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .to::<u8>();
+    pool.token_b = tokens[2]
+        .as_address()
+        .ok_or(AMMError::BatchRequestError(pool.address))?;
+    pool.token_b_decimals = tokens[3]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .to::<u8>();
+    pool.liquidity = tokens[4]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .to::<u128>();
+    pool.sqrt_price = tokens[5]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0;
+    pool.tick = tokens[6]
+        .as_int()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .as_i32();
+    pool.tick_spacing = tokens[7]
+        .as_int()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .as_i32();
+    pool.fee = tokens[8]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .to::<u32>();
 
-    Some(pool)
+    Ok(())
 }
 
 pub async fn get_v3_pool_data_batch_request<T, N, P>(
-    pool: &mut UniswapV3Pool,
+    pools: &mut [UniswapV3Pool],
     block_number: Option<u64>,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
@@ -82,7 +113,13 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetUniswapV3PoolDataBatchRequest::deploy_builder(provider, vec![pool.address]);
+    let mut target_addresses = vec![];
+
+    for pool in pools.iter() {
+        target_addresses.push(pool.address);
+    }
+
+    let deployer = IGetUniswapV3PoolDataBatchRequest::deploy_builder(provider, target_addresses);
     let res = if let Some(block_number) = block_number {
         deployer.block(block_number.into()).call_raw().await?
     } else {
@@ -103,14 +140,22 @@ where
     ])));
     let return_data_tokens = constructor_return.abi_decode_sequence(&res)?;
 
+    let mut pool_idx = 0;
     if let Some(tokens_arr) = return_data_tokens.as_array() {
         for token in tokens_arr {
-            let pool_data = token
-                .as_tuple()
-                .ok_or(AMMError::BatchRequestError(pool.address))?;
+            if let Some(pool_data) = token.as_tuple() {
+                if let Some(address) = pool_data[0].as_address() {
+                    if !address.is_zero() {
+                        let uniswap_v3_pool = pools
+                            .get_mut(pool_idx)
+                            .expect("Pool idx should be in bounds");
 
-            *pool = populate_pool_data_from_tokens(pool.to_owned(), pool_data)
-                .ok_or(AMMError::BatchRequestError(pool.address))?;
+                        populate_pool_data_from_tokens(uniswap_v3_pool, pool_data)?;
+                    }
+                }
+
+                pool_idx += 1;
+            }
         }
     }
 
@@ -272,13 +317,7 @@ where
                             .get_mut(pool_idx)
                             .expect("Pool idx should be in bounds")
                         {
-                            if let Some(pool) = populate_pool_data_from_tokens(
-                                uniswap_v3_pool.to_owned(),
-                                pool_data,
-                            ) {
-                                tracing::trace!(?pool);
-                                *uniswap_v3_pool = pool;
-                            }
+                            populate_pool_data_from_tokens(uniswap_v3_pool, pool_data)?;
                         }
                     }
                 }

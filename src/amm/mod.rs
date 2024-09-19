@@ -22,6 +22,7 @@ use alloy::{
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
+use db::models::NewDbPool;
 use serde::{Deserialize, Serialize};
 use types::exchange::{ExchangeName, ExchangeType};
 
@@ -103,6 +104,8 @@ pub trait AutomatedMarketMaker {
     /// Returns the token out of the AMM for a given `token_in`.
     // fn get_token_out(&self, token_in: Address) -> Address;
 
+    fn to_new_db_pool(&self) -> NewDbPool;
+
     fn exchange_name(&self) -> ExchangeName;
     fn exchange_type(&self) -> ExchangeType;
     fn chain(&self) -> NamedChain;
@@ -156,6 +159,12 @@ macro_rules! amm {
             fn simulate_swap_mut(&mut self, token_in: Address, amount_in: U256, token_out: Address) -> Result<U256, SwapSimulationError> {
                 match self {
                     $(AMM::$pool_type(pool) => pool.simulate_swap_mut(token_in, amount_in, token_out),)+
+                }
+            }
+
+            fn to_new_db_pool(&self) -> NewDbPool {
+                match self {
+                    $(AMM::$pool_type(pool) => pool.to_new_db_pool(),)+
                 }
             }
 

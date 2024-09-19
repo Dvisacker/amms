@@ -8,6 +8,12 @@ use uniswap_v3_math::error::UniswapV3MathError;
 
 #[derive(Error, Debug)]
 pub enum AMMError {
+    #[error("Unsupported exchange type")]
+    UnsupportedExchangeType,
+    #[error("Unsupported pool type")]
+    UnsupportedPoolType,
+    #[error("Parse error")]
+    ParseError,
     #[error("Provider error")]
     ProviderError,
     #[error(transparent)]

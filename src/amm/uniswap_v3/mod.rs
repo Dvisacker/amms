@@ -18,9 +18,11 @@ use alloy_chains::NamedChain;
 use async_recursion::async_recursion;
 use async_trait::async_trait;
 use batch_request::UniswapV3TickData;
+use db::models::{NewDbPool, NewDbUniV3Pool};
 use futures::{stream::FuturesOrdered, StreamExt};
 use num_bigfloat::BigFloat;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use std::{
     cmp::Ordering,
     collections::{BTreeMap, HashMap},
@@ -91,6 +93,62 @@ impl Info {
             liquidity_gross,
             liquidity_net,
             initialized,
+        }
+    }
+}
+
+pub fn json_to_tickbitmap(json: JsonValue) -> HashMap<i16, U256> {
+    let mut tick_bitmap: HashMap<i16, U256> = HashMap::new();
+    json.as_object().map(|map| {
+        for (tick, value) in map.iter() {
+            let tick = tick.as_str().parse::<i16>().unwrap();
+            let value = U256::from_str_radix(value.as_str().unwrap(), 2).unwrap();
+            tick_bitmap.insert(tick, value);
+        }
+    });
+    tick_bitmap
+}
+
+pub fn json_to_ticks(json: JsonValue) -> HashMap<i32, Info> {
+    let mut ticks: HashMap<i32, Info> = HashMap::new();
+    json.as_object().map(|map| {
+        for (tick, value) in map.iter() {
+            let tick = tick.as_str().parse::<i32>().unwrap();
+            let value: Info = serde_json::from_value(value.clone()).unwrap();
+            ticks.insert(tick, value);
+        }
+    });
+    ticks
+}
+
+// fn json_to_ticks(ticks: JsonValue) -> HashMap<i32, Info> {
+//     let mut ticks: HashMap<i32, Info> = HashMap::new();
+//     for (tick, value) in ticks.iter() {
+//         ticks.insert(*tick, value.parse().unwrap_or(Info::default()));
+//     }
+//     ticks
+// }
+
+impl From<NewDbUniV3Pool> for UniswapV3Pool {
+    fn from(pool: NewDbUniV3Pool) -> Self {
+        UniswapV3Pool {
+            chain: pool.chain.parse::<NamedChain>().unwrap(),
+            exchange_name: ExchangeName::from_str(&pool.exchange_name.unwrap()).unwrap(),
+            exchange_type: ExchangeType::from_str(&pool.exchange_type.unwrap()).unwrap(),
+            address: pool.address.parse().unwrap_or(Address::ZERO),
+            token_a: pool.token_a.parse().unwrap_or(Address::ZERO),
+            token_a_symbol: pool.token_a_symbol.to_string(),
+            token_a_decimals: pool.token_a_decimals as u8,
+            token_b: pool.token_b.parse().unwrap_or(Address::ZERO),
+            token_b_symbol: pool.token_b_symbol.to_string(),
+            token_b_decimals: pool.token_b_decimals as u8,
+            liquidity: pool.liquidity.unwrap().parse().unwrap_or(0),
+            sqrt_price: U256::from_str_radix(&pool.sqrt_price.unwrap(), 10).unwrap_or(U256::ZERO),
+            tick: pool.tick.unwrap_or(0),
+            tick_spacing: pool.tick_spacing.unwrap_or(0),
+            tick_bitmap: json_to_tickbitmap(pool.tick_bitmap.unwrap()),
+            ticks: json_to_ticks(pool.ticks.unwrap()),
+            fee: pool.fee.unwrap() as u32,
         }
     }
 }
@@ -175,7 +233,12 @@ impl AutomatedMarketMaker for UniswapV3Pool {
         N: Network,
         P: Provider<T, N>,
     {
-        batch_request::get_v3_pool_data_batch_request(self, block_number, provider.clone()).await?;
+        batch_request::get_v3_pool_data_batch_request(
+            std::slice::from_mut(self),
+            block_number,
+            provider.clone(),
+        )
+        .await?;
         Ok(())
     }
 
@@ -487,6 +550,28 @@ impl AutomatedMarketMaker for UniswapV3Pool {
 
     fn chain(&self) -> NamedChain {
         self.chain
+    }
+
+    fn to_new_db_pool(&self) -> NewDbPool {
+        NewDbPool::UniV3(NewDbUniV3Pool {
+            address: self.address.to_string(),
+            chain: self.chain.as_str().to_string(),
+            exchange_name: Some(self.exchange_name.as_str().to_string()),
+            exchange_type: Some(self.exchange_type.as_str().to_string()),
+            token_a: self.token_a.to_string(),
+            token_a_symbol: self.token_a_symbol.clone(),
+            token_a_decimals: self.token_a_decimals as i32,
+            token_b: self.token_b.to_string(),
+            token_b_symbol: self.token_b_symbol.clone(),
+            token_b_decimals: self.token_b_decimals as i32,
+            sqrt_price: Some(self.sqrt_price.to_string()),
+            liquidity: Some(self.liquidity.to_string()),
+            tick: Some(self.tick as i32),
+            fee: Some(self.fee as i32),
+            tick_spacing: Some(self.tick_spacing as i32),
+            tick_bitmap: None,
+            ticks: None,
+        })
     }
 }
 
