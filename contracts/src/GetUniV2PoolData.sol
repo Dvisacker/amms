@@ -28,9 +28,9 @@ contract GetUniV2PoolData {
         address tokenB;
         bytes32 tokenBSymbol;
         uint8 tokenBDecimals;
-        address factory;
         uint112 reserve0;
         uint112 reserve1;
+        address factory;
     }
 
     constructor(address[] memory pools) {
