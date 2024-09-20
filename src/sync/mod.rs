@@ -12,7 +12,7 @@ use crate::{
 
 use alloy::{network::Network, providers::Provider, transports::Transport};
 
-use std::{panic::resume_unwind, sync::Arc};
+use std::sync::Arc;
 
 /// Syncs all AMMs from the supplied factories.
 ///

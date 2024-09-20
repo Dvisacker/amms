@@ -24,9 +24,13 @@ struct PoolData {
     coins: [Address; 8],
     balances: [U256; 8],
     decimals: [u8; 8],
+    #[allow(dead_code)]
     symbols: [String; 8],
+    #[allow(dead_code)]
     virtual_price: U256,
+    #[allow(dead_code)]
     a: U256,
+    #[allow(dead_code)]
     fee: U256,
 }
 

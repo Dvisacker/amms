@@ -248,7 +248,7 @@ impl AutomatedMarketMaker for CurvePool {
     }
 
     // Calculates base/quote, meaning the price of base token per quote (ie. exchange rate is X base per 1 quote)
-    fn calculate_price(&self, base_token: Address) -> Result<f64, ArithmeticError> {
+    fn calculate_price(&self, _base_token: Address) -> Result<f64, ArithmeticError> {
         Ok(0.0)
         // Ok(q64_to_f64(self.calculate_price_64_x_64(base_token)?))
     }

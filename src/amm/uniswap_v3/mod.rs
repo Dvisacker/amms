@@ -1533,7 +1533,7 @@ mod test {
             ..Default::default()
         };
 
-        let creation_block = 12369620;
+        let _creation_block = 12369620;
         pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
         let synced_block = provider.get_block_number().await?;
         pool.populate_data(Some(synced_block), provider.clone())
