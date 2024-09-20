@@ -482,8 +482,8 @@ impl AutomatedMarketMaker for CamelotV3Pool {
             tick_spacing: Some(self.tick_spacing as i32),
             tick_bitmap: None,
             ticks: None,
-            factory: None, //TODO
-            filtered: None,
+            factory_address: None, //TODO
+            active: None,
         })
     }
 }

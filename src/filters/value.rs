@@ -28,7 +28,7 @@ sol! {
 /// Filter that removes AMMs with less aggregate token value than `usd_value_in_pool_threshold`.
 ///
 /// This function uses batched static calls to get the WETH value in each AMM.
-/// Returns a vector of filtered AMMs.
+/// Returns a vector of active AMMs.
 pub async fn filter_amms_below_usd_threshold<T, N, P>(
     amms: Vec<AMM>,
     factories: &[Factory],
@@ -46,8 +46,8 @@ where
 {
     let weth_usd_price = usd_weth_pool.calculate_price(weth)?;
 
-    // Init a new vec to hold the filtered AMMs
-    let mut filtered_amms = vec![];
+    // Init a new vec to hold the active AMMs
+    let mut active_amms = vec![];
 
     let weth_values_in_pools = get_weth_values_in_amms(
         &amms,
@@ -82,16 +82,16 @@ where
             >= usd_value_in_pool_threshold
         {
             // TODO: using clone for now since we only do this once but find a better way in a future update
-            filtered_amms.push(amms[i].clone());
+            active_amms.push(amms[i].clone());
         }
     }
 
-    Ok(filtered_amms)
+    Ok(active_amms)
 }
 /// Filter that removes AMMs with less aggregate token value than `weth_value_in_pool_threshold`.
 ///
 /// This function uses batched static calls to get the WETH value in each AMM.
-/// Returns a vector of filtered AMMs.
+/// Returns a vector of active AMMs.
 pub async fn filter_amms_below_weth_threshold<T, N, P>(
     amms: Vec<AMM>,
     factories: &[Factory],
@@ -106,7 +106,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let mut filtered_amms = vec![];
+    let mut active_amms = vec![];
 
     let weth_values_in_pools = get_weth_values_in_amms(
         &amms,
@@ -121,11 +121,11 @@ where
     for (i, weth_value) in weth_values_in_pools.iter().enumerate() {
         if *weth_value >= weth_value_in_pool_threshold {
             // TODO: using clone for now since we only do this once but find a better way in a future update
-            filtered_amms.push(amms[i].clone());
+            active_amms.push(amms[i].clone());
         }
     }
 
-    Ok(filtered_amms)
+    Ok(active_amms)
 }
 
 pub async fn get_weth_values_in_amms<T, N, P>(
@@ -141,7 +141,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    // init a new vec to hold the filtered pools
+    // init a new vec to hold the active pools
     let mut aggregate_weth_values_in_amms = vec![];
 
     let mut idx_from = 0;

@@ -4,7 +4,7 @@ use std::collections::HashSet;
 
 /// Filters out AMMs that contain a blacklisted token.
 pub fn filter_blacklisted_tokens(amms: Vec<AMM>, blacklisted_addresses: Vec<Address>) -> Vec<AMM> {
-    let mut filtered_pools = vec![];
+    let mut active_pools = vec![];
     let blacklist: HashSet<Address> = blacklisted_addresses.into_iter().collect();
 
     for amm in amms {
@@ -17,25 +17,25 @@ pub fn filter_blacklisted_tokens(amms: Vec<AMM>, blacklisted_addresses: Vec<Addr
         }
 
         if !blacklisted_token_in_amm {
-            filtered_pools.push(amm);
+            active_pools.push(amm);
         }
     }
 
-    filtered_pools
+    active_pools
 }
 
 /// Filters out AMMs where the AMM address is a blacklisted address.
 pub fn filter_blacklisted_amms(amms: Vec<AMM>, blacklisted_addresses: Vec<Address>) -> Vec<AMM> {
-    let mut filtered_amms = vec![];
+    let mut active_amms = vec![];
     let blacklist: HashSet<Address> = blacklisted_addresses.into_iter().collect();
 
     for amm in amms {
         if !blacklist.contains(&amm.address()) {
-            filtered_amms.push(amm);
+            active_amms.push(amm);
         }
     }
 
-    filtered_amms
+    active_amms
 }
 
 /// Filters out AMMs where AMM address or any tokens in the AMM are in the blacklist.
@@ -43,7 +43,7 @@ pub fn filter_blacklisted_addresses(
     amms: Vec<AMM>,
     blacklisted_addresses: Vec<Address>,
 ) -> Vec<AMM> {
-    let mut filtered_amms = vec![];
+    let mut active_amms = vec![];
     let blacklist: HashSet<Address> = blacklisted_addresses.into_iter().collect();
 
     for amm in amms {
@@ -61,11 +61,11 @@ pub fn filter_blacklisted_addresses(
             blacklisted_address_in_amm = true;
         }
 
-        //If there are no blacklisted addresses, add the amm to the filtered amms
+        //If there are no blacklisted addresses, add the amm to the active amms
         if !blacklisted_address_in_amm {
-            filtered_amms.push(amm);
+            active_amms.push(amm);
         }
     }
 
-    filtered_amms
+    active_amms
 }

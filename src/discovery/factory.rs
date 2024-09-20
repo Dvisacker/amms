@@ -101,16 +101,16 @@ where
         from_block += step;
     }
 
-    let mut filtered_factories = vec![];
+    let mut active_factories = vec![];
     tracing::trace!(number_of_amms_threshold, "checking threshold");
     for (address, (factory, amms_length)) in identified_factories {
         if amms_length >= number_of_amms_threshold {
             tracing::trace!("factory {} has {} AMMs => adding", address, amms_length);
-            filtered_factories.push(factory);
+            active_factories.push(factory);
         } else {
             tracing::trace!("factory {} has {} AMMs => skipping", address, amms_length);
         }
     }
 
-    Ok(filtered_factories)
+    Ok(active_factories)
 }

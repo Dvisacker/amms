@@ -171,8 +171,8 @@ impl From<UniswapV3Pool> for NewDbUniV3Pool {
             tick_spacing: Some(pool.tick_spacing),
             tick_bitmap: Some(serde_json::to_value(&pool.tick_bitmap).unwrap()),
             ticks: Some(serde_json::to_value(&pool.ticks).unwrap()),
-            factory: Some(pool.factory.to_string()),
-            filtered: None,
+            factory_address: Some(pool.factory.to_string()),
+            active: None,
         }
     }
 }
@@ -595,8 +595,8 @@ impl AutomatedMarketMaker for UniswapV3Pool {
             tick_spacing: Some(self.tick_spacing as i32),
             tick_bitmap: None,
             ticks: None,
-            factory: Some(self.factory.to_string()),
-            filtered: None,
+            factory_address: Some(self.factory.to_string()),
+            active: None,
         })
     }
 }

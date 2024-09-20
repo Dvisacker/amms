@@ -221,6 +221,7 @@ impl AutomatedMarketMaker for ERC4626Vault {
             withdraw_fee: self.withdraw_fee as i32,
             exchange_name: Some(self.exchange_name.as_str().to_string()),
             exchange_type: Some(self.exchange_type.as_str().to_string()),
+            active: None,
         })
     }
 }
