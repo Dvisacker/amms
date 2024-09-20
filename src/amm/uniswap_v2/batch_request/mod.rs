@@ -29,7 +29,15 @@ sol! {
     "src/amm/uniswap_v2/batch_request/GetUniswapV2PoolDataBatchRequestABI.json"
 }
 
+sol! {
+    #[allow(missing_docs)]
+    #[sol(rpc)]
+    IGetUniV2PoolData,
+    "src/amm/uniswap_v2/batch_request/GetUniV2PoolData.json"
+}
+
 #[inline]
+// This is the older version of the function that is to be deprecated
 fn populate_pool_data_from_tokens(
     mut pool: UniswapV2Pool,
     tokens: &[DynSolValue],
@@ -42,6 +50,61 @@ fn populate_pool_data_from_tokens(
     pool.reserve_1 = tokens[5].as_uint()?.0.to::<u128>();
 
     Some(pool)
+}
+
+fn bytes32_to_string(bytes: &[u8]) -> String {
+    let mut result = String::from_utf8_lossy(bytes).into_owned();
+    result.truncate(result.trim_end_matches('\0').len());
+    result
+}
+
+pub fn populate_v2_pool_data(
+    pool: &mut UniswapV2Pool,
+    tokens: &[DynSolValue],
+) -> Result<(), AMMError> {
+    pool.token_a = tokens[0]
+        .as_address()
+        .ok_or(AMMError::BatchRequestError(pool.address))?;
+    pool.token_a_symbol = bytes32_to_string(
+        tokens[1]
+            .as_fixed_bytes()
+            .ok_or(AMMError::BatchRequestError(pool.address))?
+            .0,
+    );
+    pool.token_a_decimals = tokens[2]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .to::<u8>();
+    pool.token_b = tokens[3]
+        .as_address()
+        .ok_or(AMMError::BatchRequestError(pool.address))?;
+    pool.token_b_symbol = bytes32_to_string(
+        tokens[4]
+            .as_fixed_bytes()
+            .ok_or(AMMError::BatchRequestError(pool.address))?
+            .0,
+    );
+    pool.token_b_decimals = tokens[5]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .to::<u8>();
+    pool.reserve_0 = tokens[6]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .to::<u128>();
+    pool.reserve_1 = tokens[7]
+        .as_uint()
+        .ok_or(AMMError::BatchRequestError(pool.address))?
+        .0
+        .to::<u128>();
+    pool.factory = tokens[8]
+        .as_address()
+        .ok_or(AMMError::BatchRequestError(pool.address))?;
+
+    Ok(())
 }
 
 pub async fn get_pairs_batch_request<T, N, P>(
@@ -133,6 +196,35 @@ where
     Ok(())
 }
 
+pub async fn fetch_v2_pool_data_batch_request<T, N, P>(
+    addresses: &[Address],
+    provider: Arc<P>,
+) -> Result<DynSolValue, AMMError>
+where
+    T: Transport + Clone,
+    N: Network,
+    P: Provider<T, N>,
+{
+    let deployer = IGetUniV2PoolData::deploy_builder(provider, addresses.to_vec());
+    let res = deployer.call_raw().await?;
+
+    let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
+        DynSolType::Address,        //token a
+        DynSolType::FixedBytes(32), //token a symbol
+        DynSolType::Uint(8),        //token a decimals
+        DynSolType::Address,        //token b
+        DynSolType::FixedBytes(32), //token b symbol
+        DynSolType::Uint(8),        //token b decimals
+        DynSolType::Address,        //factory address
+        DynSolType::Uint(112),      //reserve 0
+        DynSolType::Uint(112),      //reserve 1
+    ])));
+
+    let return_data = constructor_return.abi_decode_sequence(&res)?;
+
+    Ok(return_data)
+}
+
 pub async fn get_v2_pool_data_batch_request<T, N, P>(
     pools: &mut [UniswapV2Pool],
     provider: Arc<P>,
@@ -147,21 +239,10 @@ where
         target_addresses.push(pool.address);
     }
 
-    let deployer = IGetUniswapV2PoolDataBatchRequest::deploy_builder(provider, target_addresses);
-    let res = deployer.call_raw().await?;
-
-    let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
-        DynSolType::Address,
-        DynSolType::Uint(8),
-        DynSolType::Address,
-        DynSolType::Uint(8),
-        DynSolType::Uint(112),
-        DynSolType::Uint(112),
-    ])));
-    let return_data_tokens = constructor_return.abi_decode_sequence(&res)?;
+    let return_data = fetch_v2_pool_data_batch_request(&target_addresses, provider).await?;
 
     let mut pool_idx = 0;
-    if let Some(tokens_arr) = return_data_tokens.as_array() {
+    if let Some(tokens_arr) = return_data.as_array() {
         for token in tokens_arr {
             if let Some(pool_data) = token.as_tuple() {
                 // If the pool token A is not zero, signaling that the pool data was polulated
@@ -172,12 +253,11 @@ where
                             .get_mut(pool_idx)
                             .expect("Pool idx should be in bounds");
 
-                        if let Some(pool) =
-                            populate_pool_data_from_tokens(uniswap_v2_pool.to_owned(), pool_data)
-                        {
-                            tracing::trace!(?pool);
-                            *uniswap_v2_pool = pool;
-                        }
+                        populate_v2_pool_data(uniswap_v2_pool, pool_data)?;
+                        // {
+                        //     tracing::trace!(?pool);
+                        //     *uniswap_v2_pool = pool;
+                        // }
                     }
                 }
 

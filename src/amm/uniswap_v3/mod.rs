@@ -68,6 +68,8 @@ pub struct UniswapV3Pool {
     pub token_b_decimals: u8,
     pub token_b_symbol: String,
     pub liquidity: u128,
+    pub liquidity_net: i128,
+    pub factory: Address,
     pub sqrt_price: U256,
     pub fee: u32,
     pub tick: i32,
@@ -121,14 +123,7 @@ pub fn json_to_ticks(json: JsonValue) -> HashMap<i32, Info> {
     ticks
 }
 
-// fn json_to_ticks(ticks: JsonValue) -> HashMap<i32, Info> {
-//     let mut ticks: HashMap<i32, Info> = HashMap::new();
-//     for (tick, value) in ticks.iter() {
-//         ticks.insert(*tick, value.parse().unwrap_or(Info::default()));
-//     }
-//     ticks
-// }
-
+// cast a NewDbUniV3Pool into a UniswapV3Pool
 impl From<NewDbUniV3Pool> for UniswapV3Pool {
     fn from(pool: NewDbUniV3Pool) -> Self {
         UniswapV3Pool {
@@ -142,13 +137,42 @@ impl From<NewDbUniV3Pool> for UniswapV3Pool {
             token_b: pool.token_b.parse().unwrap_or(Address::ZERO),
             token_b_symbol: pool.token_b_symbol.to_string(),
             token_b_decimals: pool.token_b_decimals as u8,
+            factory: Address::ZERO, // TODO
             liquidity: pool.liquidity.unwrap().parse().unwrap_or(0),
+            liquidity_net: 0, // TODO
             sqrt_price: U256::from_str_radix(&pool.sqrt_price.unwrap(), 10).unwrap_or(U256::ZERO),
             tick: pool.tick.unwrap_or(0),
             tick_spacing: pool.tick_spacing.unwrap_or(0),
             tick_bitmap: json_to_tickbitmap(pool.tick_bitmap.unwrap()),
             ticks: json_to_ticks(pool.ticks.unwrap()),
             fee: pool.fee.unwrap() as u32,
+        }
+    }
+}
+
+// cast a UniswapV3Pool into a NewDbUniV3Pool
+impl From<UniswapV3Pool> for NewDbUniV3Pool {
+    fn from(pool: UniswapV3Pool) -> Self {
+        NewDbUniV3Pool {
+            address: pool.address.to_string(),
+            chain: pool.chain.as_str().to_string(),
+            exchange_name: Some(pool.exchange_name.as_str().to_string()),
+            exchange_type: Some(pool.exchange_type.as_str().to_string()),
+            token_a: pool.token_a.to_string(),
+            token_a_symbol: pool.token_a_symbol,
+            token_a_decimals: pool.token_a_decimals as i32,
+            token_b: pool.token_b.to_string(),
+            token_b_symbol: pool.token_b_symbol,
+            token_b_decimals: pool.token_b_decimals as i32,
+            sqrt_price: Some(pool.sqrt_price.to_string()),
+            liquidity: Some(pool.liquidity.to_string()),
+            tick: Some(pool.tick),
+            fee: Some(pool.fee as i32),
+            tick_spacing: Some(pool.tick_spacing),
+            tick_bitmap: Some(serde_json::to_value(&pool.tick_bitmap).unwrap()),
+            ticks: Some(serde_json::to_value(&pool.ticks).unwrap()),
+            factory: Some(pool.factory.to_string()),
+            filtered: None,
         }
     }
 }
@@ -571,6 +595,8 @@ impl AutomatedMarketMaker for UniswapV3Pool {
             tick_spacing: Some(self.tick_spacing as i32),
             tick_bitmap: None,
             ticks: None,
+            factory: Some(self.factory.to_string()),
+            filtered: None,
         })
     }
 }
@@ -587,6 +613,8 @@ impl UniswapV3Pool {
         token_b_symbol: String,
         fee: u32,
         liquidity: u128,
+        liquidity_net: i128,
+        factory: Address,
         sqrt_price: U256,
         tick: i32,
         tick_spacing: i32,
@@ -604,8 +632,10 @@ impl UniswapV3Pool {
             token_b,
             token_b_decimals,
             token_b_symbol,
-            fee,
+            factory,
             liquidity,
+            liquidity_net,
+            fee,
             sqrt_price,
             tick,
             tick_spacing,
@@ -628,6 +658,8 @@ impl UniswapV3Pool {
     pub async fn new_empty(address: Address, chain: NamedChain) -> Result<Self, AMMError> {
         let pool = UniswapV3Pool {
             address,
+            factory: Address::ZERO,
+            liquidity_net: 0,
             token_a: Address::ZERO,
             token_a_decimals: 0,
             token_a_symbol: String::new(),
@@ -664,6 +696,8 @@ impl UniswapV3Pool {
     {
         let mut pool = UniswapV3Pool {
             address: pair_address,
+            factory: Address::ZERO,
+            liquidity_net: 0,
             token_a: Address::ZERO,
             token_a_decimals: 0,
             token_a_symbol: String::new(),
@@ -755,6 +789,8 @@ impl UniswapV3Pool {
                 exchange_name: ExchangeName::Unknown,
                 exchange_type: ExchangeType::Unknown,
                 chain: NamedChain::Mainnet,
+                factory: Address::ZERO,
+                liquidity_net: 0,
             })
         } else {
             Err(EventLogError::InvalidEventSignature)

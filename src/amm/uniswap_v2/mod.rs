@@ -56,6 +56,51 @@ pub struct UniswapV2Pool {
     pub exchange_type: ExchangeType,
     #[serde(with = "chain_serde")]
     pub chain: NamedChain,
+    pub factory: Address,
+}
+
+impl From<NewDbUniV2Pool> for UniswapV2Pool {
+    fn from(pool: NewDbUniV2Pool) -> Self {
+        UniswapV2Pool {
+            address: pool.address.parse().unwrap_or(Address::ZERO),
+            token_a: pool.token_a.parse().unwrap_or(Address::ZERO),
+            token_a_decimals: pool.token_a_decimals as u8,
+            token_a_symbol: pool.token_a_symbol.to_string(),
+            token_b: pool.token_b.parse().unwrap_or(Address::ZERO),
+            token_b_decimals: pool.token_b_decimals as u8,
+            token_b_symbol: pool.token_b_symbol.to_string(),
+            reserve_0: pool.reserve_0.parse().unwrap_or(0),
+            reserve_1: pool.reserve_1.parse().unwrap_or(0),
+            fee: pool.fee as u32,
+            factory: pool.factory.unwrap().parse().unwrap_or(Address::ZERO),
+            exchange_name: ExchangeName::from_str(&pool.exchange_name).unwrap(),
+            exchange_type: ExchangeType::from_str(&pool.exchange_type).unwrap(),
+            chain: pool.chain.parse::<NamedChain>().unwrap(),
+        }
+    }
+}
+
+impl From<UniswapV2Pool> for NewDbUniV2Pool {
+    fn from(pool: UniswapV2Pool) -> Self {
+        NewDbUniV2Pool {
+            address: pool.address.to_string(),
+            chain: pool.chain.as_str().to_string(),
+            exchange_name: pool.exchange_name.as_str().to_string(),
+            exchange_type: pool.exchange_type.as_str().to_string(),
+            token_a: pool.token_a.to_string(),
+            token_a_symbol: pool.token_a_symbol.clone(),
+            token_a_decimals: pool.token_a_decimals as i32,
+            token_b: pool.token_b.to_string(),
+            token_b_symbol: pool.token_b_symbol.clone(),
+            token_b_decimals: pool.token_b_decimals as i32,
+            reserve_0: pool.reserve_0.to_string(),
+            reserve_1: pool.reserve_1.to_string(),
+            fee: pool.fee as i32,
+            factory_address: pool.factory.to_string(), // TODO: deprecate
+            factory: Some(pool.factory.to_string()),
+            filtered: None,
+        }
+    }
 }
 
 #[async_trait]
@@ -239,8 +284,9 @@ impl AutomatedMarketMaker for UniswapV2Pool {
             reserve_0: self.reserve_0.to_string(),
             reserve_1: self.reserve_1.to_string(),
             fee: self.fee as i32,
-            factory_address: "".to_string(),
+            factory_address: "".to_string(), // TODO: deprecate
             filtered: None,
+            factory: Some(self.factory.to_string()),
         })
     }
 }
@@ -258,6 +304,7 @@ impl UniswapV2Pool {
         reserve_0: u128,
         reserve_1: u128,
         fee: u32,
+        factory: Address,
         exchange_name: ExchangeName,
         exchange_type: ExchangeType,
         chain: NamedChain,
@@ -273,6 +320,7 @@ impl UniswapV2Pool {
             reserve_0,
             reserve_1,
             fee,
+            factory,
             exchange_name,
             exchange_type,
             chain,
@@ -301,6 +349,7 @@ impl UniswapV2Pool {
             reserve_0: 0,
             reserve_1: 0,
             fee,
+            factory: Address::ZERO,
             exchange_name: ExchangeName::Unknown,
             exchange_type: ExchangeType::Unknown,
             chain: NamedChain::Mainnet,
@@ -360,6 +409,7 @@ impl UniswapV2Pool {
                 reserve_0: 0,
                 reserve_1: 0,
                 fee: 0,
+                factory: Address::ZERO,
                 exchange_name: ExchangeName::UniswapV2,
                 exchange_type: ExchangeType::UniV2,
                 chain: NamedChain::Mainnet,

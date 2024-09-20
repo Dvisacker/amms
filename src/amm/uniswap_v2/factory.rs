@@ -153,6 +153,7 @@ impl AutomatedMarketMakerFactory for UniswapV2Factory {
             exchange_name: ExchangeName::Unknown,
             exchange_type: ExchangeType::Unknown,
             chain: NamedChain::Mainnet,
+            factory: Address::ZERO,
         }))
     }
 
