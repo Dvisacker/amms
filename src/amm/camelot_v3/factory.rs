@@ -204,14 +204,9 @@ impl CamelotV3Factory {
         let mut from_block = self.creation_block;
         let mut aggregated_amms: HashMap<Address, AMM> = HashMap::new();
         let mut ordered_logs: BTreeMap<u64, Vec<Log>> = BTreeMap::new();
-        // let mut futures = FuturesOrdered::new();
 
         while from_block < to_block {
             let mut target_block = from_block + step - 1;
-            println!(
-                "Getting logs from block: {} to block: {}",
-                from_block, target_block
-            );
             if target_block > to_block {
                 target_block = to_block;
             }
@@ -230,7 +225,12 @@ impl CamelotV3Factory {
                 .await
                 .map_err(AMMError::TransportError)?;
 
-            println!("Got {:?} Logs", logs.len());
+            tracing::info!(
+                "Got {:?} logs from block {:?} to block {:?}",
+                logs.len(),
+                from_block,
+                target_block
+            );
 
             for log in logs {
                 if let Some(log_block_number) = log.block_number {
@@ -300,10 +300,6 @@ impl CamelotV3Factory {
 
         while from_block < to_block {
             let mut target_block = from_block + step - 1;
-            println!(
-                "Getting logs from block: {} to block: {}",
-                from_block, target_block
-            );
             if target_block > to_block {
                 target_block = to_block;
             }
@@ -318,7 +314,12 @@ impl CamelotV3Factory {
                 .await
                 .map_err(AMMError::TransportError)?;
 
-            println!("Got {:?} Logs", logs.len());
+            tracing::info!(
+                "Got {:?} logs from block {:?} to block {:?}",
+                logs.len(),
+                from_block,
+                target_block
+            );
 
             for log in logs {
                 if let Some(log_block_number) = log.block_number {

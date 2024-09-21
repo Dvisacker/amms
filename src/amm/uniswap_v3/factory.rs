@@ -176,10 +176,6 @@ impl UniswapV3Factory {
 
         while from_block < to_block {
             let mut target_block = from_block + step - 1;
-            println!(
-                "Getting logs from block: {} to block: {}",
-                from_block, target_block
-            );
             if target_block > to_block {
                 target_block = to_block;
             }
@@ -198,7 +194,12 @@ impl UniswapV3Factory {
                 .await
                 .map_err(AMMError::TransportError)?;
 
-            println!("Got {:?} Logs", logs.len());
+            tracing::info!(
+                "Got {:?} logs from block {:?} to block {:?}",
+                logs.len(),
+                from_block,
+                target_block
+            );
 
             for log in logs {
                 if let Some(log_block_number) = log.block_number {
@@ -268,10 +269,6 @@ impl UniswapV3Factory {
 
         while from_block < to_block {
             let mut target_block = from_block + step - 1;
-            println!(
-                "Getting logs from block: {} to block: {}",
-                from_block, target_block
-            );
             if target_block > to_block {
                 target_block = to_block;
             }
@@ -286,7 +283,12 @@ impl UniswapV3Factory {
                 .await
                 .map_err(AMMError::TransportError)?;
 
-            println!("Got {:?} Logs", logs.len());
+            tracing::info!(
+                "Got {:?} logs from block {:?} to block {:?}",
+                logs.len(),
+                from_block,
+                target_block
+            );
 
             for log in logs {
                 if let Some(log_block_number) = log.block_number {
