@@ -215,9 +215,9 @@ where
         DynSolType::Address,        //token b
         DynSolType::FixedBytes(32), //token b symbol
         DynSolType::Uint(8),        //token b decimals
-        DynSolType::Address,        //factory address
         DynSolType::Uint(112),      //reserve 0
         DynSolType::Uint(112),      //reserve 1
+        DynSolType::Address,        //factory address
     ])));
 
     let return_data = constructor_return.abi_decode_sequence(&res)?;
