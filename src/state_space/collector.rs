@@ -1,8 +1,8 @@
 // TODO: re-integrate Artemis once its migrated to Alloy
 compile_error!("Artemis does not yet support Alloy");
 
-use artemis_core::types::{Collector, CollectorStream};
 use async_trait::async_trait;
+use core::types::{Collector, CollectorStream};
 use ethers::{
     providers::{Middleware, PubsubClient},
     types::H160,
@@ -23,7 +23,7 @@ use super::StateSpaceManager;
 ///     sync,
 /// };
 ///
-/// use artemis_core::{engine, types};
+/// use engine::{engine, types};
 /// use async_trait::async_trait;
 /// use ethers::{
 ///     providers::{Http, Provider, Ws},
@@ -128,7 +128,7 @@ use super::StateSpaceManager;
 ///
 /// #[async_trait]
 /// impl types::Strategy<Vec<H160>, Transaction> for SimpleArbitrage {
-///     async fn sync_state(&mut self) -> anyhow::Result<()> {
+///     async fn sync_state(&mut self) -> eyre::Result<()> {
 ///         Ok(())
 ///     }
 ///
@@ -193,7 +193,7 @@ where
     /// Artemis collector implementation for state space manager.
     ///
     /// Returns a `CollectorStream` of `Vec<H160>` representing the AMM addresses that incurred a state change in the block.
-    async fn get_event_stream(&self) -> anyhow::Result<CollectorStream<'_, Vec<H160>>> {
+    async fn get_event_stream(&self) -> eyre::Result<CollectorStream<'_, Vec<H160>>> {
         let (state_change_rx, mut join_handles) = self.subscribe_state_changes().await?;
 
         let stream_handle = join_handles.swap_remove(0);

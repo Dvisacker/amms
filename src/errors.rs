@@ -66,6 +66,8 @@ pub enum AMMError {
     EyreError(#[from] eyre::Error),
     #[error("Unknown pool type")]
     UnknownPoolType,
+    #[error("Simulation error")]
+    SimulationError,
 }
 
 #[derive(Error, Debug)]

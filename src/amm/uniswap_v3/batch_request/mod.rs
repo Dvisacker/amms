@@ -1,4 +1,4 @@
-use std::{sync::Arc, vec};
+use std::{cmp::min, sync::Arc, vec};
 
 use alloy::{
     dyn_abi::{DynSolType, DynSolValue},
@@ -284,36 +284,46 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetUniswapV3TickDataBatchRequest::deploy_builder(
-        provider,
-        pool.address,
-        zero_for_one,
-        I24::unchecked_from(tick_start),
-        num_ticks,
-        I24::unchecked_from(pool.tick_spacing),
-    );
+    let mut all_tick_data: Vec<UniswapV3TickData> = vec![];
+    let mut last_tick = tick_start;
+    let range = min(100, num_ticks as u16);
+    let bn = block_number.unwrap_or(0);
 
-    println!("tick_spacing: {}", pool.tick_spacing);
+    while last_tick < tick_start + num_ticks as i32 {
+        let deployer = IGetUniswapV3TickDataBatchRequest::deploy_builder(
+            provider.clone(),
+            pool.address,
+            zero_for_one,
+            I24::unchecked_from(last_tick),
+            range,
+            I24::unchecked_from(pool.tick_spacing),
+        );
 
-    let data = match block_number {
-        Some(number) => deployer.block(number.into()).call_raw().await?,
-        None => deployer.call_raw().await?,
-    };
+        let data = match block_number {
+            Some(number) => deployer.block(number.into()).call_raw().await?,
+            None => deployer.call_raw().await?,
+        };
 
-    let result = TicksWithBlock::abi_decode(&data, true)?;
+        let result = TicksWithBlock::abi_decode(&data, true)?;
 
-    let tick_data: Vec<UniswapV3TickData> = result
-        .ticks
-        .iter()
-        .map(|tick| UniswapV3TickData {
-            initialized: tick.initialized,
-            tick: tick.tick.as_i32(),
-            liquidity_gross: tick.liquidityGross,
-            liquidity_net: tick.liquidityNet,
-        })
-        .collect();
+        let tick_data: Vec<UniswapV3TickData> = result
+            .ticks
+            .iter()
+            .map(|tick| UniswapV3TickData {
+                initialized: tick.initialized,
+                tick: tick.tick.as_i32(),
+                liquidity_gross: tick.liquidityGross,
+                liquidity_net: tick.liquidityNet,
+            })
+            .collect();
 
-    Ok((tick_data, result.blockNumber))
+        println!("Adding tick_data: {:?}", tick_data[0].tick);
+
+        all_tick_data.extend(tick_data);
+        last_tick += range as i32;
+    }
+
+    Ok((all_tick_data, U256::from(bn)))
 }
 
 pub async fn sync_v3_pool_batch_request<T, N, P>(
