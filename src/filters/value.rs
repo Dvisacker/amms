@@ -195,6 +195,7 @@ where
         .iter()
         .map(|d| match d {
             Factory::UniswapV2Factory(_) => false,
+            Factory::Ve33Factory(_) => false,
             Factory::UniswapV3Factory(_) => true,
         })
         .collect::<Vec<bool>>();

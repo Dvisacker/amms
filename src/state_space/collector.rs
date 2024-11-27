@@ -78,14 +78,14 @@ use super::StateSpaceManager;
 ///     // Group amm addresses by token pairs
 ///     let pairs = aggregate_pairs(state_space_manager.state.read().await.deref());
 ///
-///     let simple_arbitrage_strategy = SimpleArbitrage {
+///     let base_arbitrage_strategy = SimpleArbitrage {
 ///         state_space: state_space_manager.state.clone(),
 ///         pairs,
 ///     };
 ///
 ///     let mut engine: engine::Engine<Vec<H160>, Transaction> = engine::Engine::new();
 ///     engine.add_collector(Box::new(state_space_manager));
-///     engine.add_strategy(Box::new(simple_arbitrage_strategy));
+///     engine.add_strategy(Box::new(base_arbitrage_strategy));
 ///
 ///     //Start the engine
 ///     if let Ok(mut set) = engine.run().await {

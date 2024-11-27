@@ -20,6 +20,7 @@ use crate::errors::{AMMError, EventLogError};
 use super::{
     uniswap_v2::factory::{IUniswapV2Factory, UniswapV2Factory},
     uniswap_v3::factory::{IUniswapV3Factory, UniswapV3Factory},
+    ve33::factory::Ve33Factory,
     AMM,
 };
 
@@ -174,7 +175,7 @@ macro_rules! factory {
     };
 }
 
-factory!(UniswapV2Factory, UniswapV3Factory);
+factory!(UniswapV2Factory, UniswapV3Factory, Ve33Factory);
 
 impl Factory {
     pub async fn get_all_pools_from_logs<T, N, P>(

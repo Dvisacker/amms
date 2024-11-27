@@ -8,7 +8,7 @@ use std::{
 
 use alloy::{network::Network, primitives::Address, providers::Provider, transports::Transport};
 
-use crate::amm::AutomatedMarketMaker;
+use crate::amm::{ve33::factory::Ve33Factory, AutomatedMarketMaker};
 use serde::{Deserialize, Serialize};
 
 use tokio::task::JoinHandle;
@@ -204,6 +204,8 @@ where
             Address::ZERO,
             0,
         ))),
+
+        AMM::Ve33Pool(_) => Some(Factory::Ve33Factory(Ve33Factory::new(Address::ZERO, 0, 0))),
 
         AMM::ERC4626Vault(_) => None,
         AMM::CamelotV3Pool(_) => None,

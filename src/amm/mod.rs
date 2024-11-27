@@ -6,6 +6,7 @@ pub mod erc_4626;
 pub mod factory;
 pub mod uniswap_v2;
 pub mod uniswap_v3;
+pub mod ve33;
 
 use std::{
     hash::{Hash, Hasher},
@@ -30,7 +31,7 @@ use crate::errors::{AMMError, ArithmeticError, EventLogError, SwapSimulationErro
 
 use self::{
     camelot_v3::CamelotV3Pool, curve::CurvePool, erc_4626::ERC4626Vault, uniswap_v2::UniswapV2Pool,
-    uniswap_v3::UniswapV3Pool,
+    uniswap_v3::UniswapV3Pool, ve33::Ve33Pool,
 };
 
 sol! {
@@ -251,6 +252,7 @@ macro_rules! amm {
 amm!(
     UniswapV2Pool,
     UniswapV3Pool,
+    Ve33Pool,
     ERC4626Vault,
     CamelotV3Pool,
     CurvePool

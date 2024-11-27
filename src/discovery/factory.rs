@@ -92,6 +92,11 @@ where
                         uniswap_v3_factory.creation_block =
                             log.block_number.ok_or(AMMError::BlockNumberNotFound)?;
                     }
+                    Factory::Ve33Factory(ve33_factory) => {
+                        ve33_factory.address = log.address();
+                        ve33_factory.creation_block =
+                            log.block_number.ok_or(AMMError::BlockNumberNotFound)?;
+                    }
                 }
 
                 identified_factories.insert(log.address(), (factory, 0));
