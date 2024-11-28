@@ -6,7 +6,7 @@ interface IUniswapV2Pair {
 
     function token1() external view returns (address);
 
-    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
+    function getReserves() external view returns (uint256 reserve0, uint256 reserve1, uint32 blockTimestampLast);
 }
 
 interface IERC20 {
@@ -23,8 +23,8 @@ contract GetUniswapV2PoolDataBatchRequest {
         uint8 tokenADecimals;
         address tokenB;
         uint8 tokenBDecimals;
-        uint112 reserve0;
-        uint112 reserve1;
+        uint256 reserve0;
+        uint256 reserve1;
     }
 
     constructor(address[] memory pools) {
@@ -91,10 +91,15 @@ contract GetUniswapV2PoolDataBatchRequest {
 
             // Get reserves
             try IUniswapV2Pair(poolAddress).getReserves() returns (
-                uint112 _reserve0, uint112 _reserve1, uint32 /*_blockTimestampLast*/
+                uint256 _reserve0, uint256 _reserve1, uint32 /*_blockTimestampLast*/
             ) {
-                poolData.reserve0 = _reserve0;
-                poolData.reserve1 = _reserve1;
+                if (_reserve0 > type(uint112).max || _reserve1 > type(uint112).max) {
+                    poolData.reserve0 = 0;
+                    poolData.reserve1 = 0;
+                } else {
+                    poolData.reserve0 = uint112(_reserve0);
+                    poolData.reserve1 = uint112(_reserve1);
+                }
             } catch {
                 poolData.reserve0 = 0;
                 poolData.reserve1 = 0;

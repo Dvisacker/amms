@@ -135,10 +135,7 @@ where
 {
     let mut target_addresses = vec![];
     for amm in amms.iter() {
-        // temp hack
-        if amm.address() != address!("ef4fC624EA1a2Acfd806240Ada70d6802a81Eaf3") {
-            target_addresses.push(amm.address());
-        }
+        target_addresses.push(amm.address());
     }
 
     println!("All target addresses: {:?}", target_addresses);
@@ -258,4 +255,82 @@ where
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::amm::ExchangeType;
+    use alloy::providers::ProviderBuilder;
+    use alloy_chains::{Chain, NamedChain};
+    use config::get_chain_config;
+    use std::{env, str::FromStr};
+    use types::exchange::ExchangeName;
+
+    const VE33_POOL_ADDRESS: &str = "0x8ff6c0958199a79ac0a619a88ceb6c0c96f16f89";
+    const AEROUSDC_ADDRESS: &str = "0x6cdcb1c4a4d1c3c6d054b27ac5b77e89eafb971d";
+
+    #[tokio::test]
+    async fn test_get_amm_data_batch_request() {
+        // Get RPC URL from environment variable, or use default
+        dotenv::dotenv().ok();
+        let config = get_chain_config(Chain::from_named(NamedChain::Base)).await;
+        let provider = config.ws;
+
+        // Create a test pool
+        let pool_address = Address::from_str(VE33_POOL_ADDRESS).expect("Invalid address");
+        let mut test_pool = UniswapV2Pool {
+            address: pool_address,
+            token_a: Address::ZERO,
+            token_a_symbol: String::new(),
+            token_a_decimals: 0,
+            token_b: Address::ZERO,
+            token_b_symbol: String::new(),
+            token_b_decimals: 0,
+            reserve_0: 0,
+            reserve_1: 0,
+            factory: Address::ZERO,
+            fee: 300, // 0.3% fee for UniswapV2
+            exchange_name: ExchangeName::Aerodrome,
+            exchange_type: ExchangeType::UniV2,
+            chain: NamedChain::Base,
+        };
+
+        let mut amms = vec![AMM::UniswapV2Pool(test_pool)];
+
+        // Execute the batch request
+        get_amm_data_batch_request(&mut amms, provider)
+            .await
+            .expect("Batch request failed");
+
+        println!("{:?}", amms);
+
+        // Verify the results
+        if let AMM::UniswapV2Pool(updated_pool) = &amms[0] {
+            assert_ne!(updated_pool.token_a, Address::ZERO, "token_a should be set");
+            assert_ne!(updated_pool.token_b, Address::ZERO, "token_b should be set");
+            assert_ne!(
+                updated_pool.token_a_decimals, 0,
+                "token_a_decimals should be set"
+            );
+            assert_ne!(
+                updated_pool.token_b_decimals, 0,
+                "token_b_decimals should be set"
+            );
+
+            // Print pool details for verification
+            println!("Pool details:");
+            println!("Token A: {:?}", updated_pool.token_a);
+            println!("Token A symbol: {}", updated_pool.token_a_symbol);
+            println!("Token A decimals: {}", updated_pool.token_a_decimals);
+            println!("Token B: {:?}", updated_pool.token_b);
+            println!("Token B symbol: {}", updated_pool.token_b_symbol);
+            println!("Token B decimals: {}", updated_pool.token_b_decimals);
+            println!("Reserve 0: {}", updated_pool.reserve_0);
+            println!("Reserve 1: {}", updated_pool.reserve_1);
+            println!("Factory: {:?}", updated_pool.factory);
+        } else {
+            panic!("Expected UniswapV2Pool variant");
+        }
+    }
 }

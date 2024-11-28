@@ -9,18 +9,9 @@ use alloy::{
 use std::sync::Arc;
 
 use crate::{
-    amm::{AutomatedMarketMaker, AMM},
     bindings::{self, getve33poolsbatchrequest::GetVe33PoolsBatchRequest},
     errors::AMMError,
 };
-
-// contract to get all pools from a ve33 factory.
-// sol! {
-//     #[allow(missing_docs)]
-//     #[sol(rpc)]
-//     IGetVe33PoolsBatchRequest,
-//     "src/amm/ve33/batch_request/GetVe33PoolsBatchRequest.json"
-// }
 
 pub async fn get_pools_batch_request<T, N, P>(
     factory: Address,
