@@ -12,7 +12,11 @@ use tracing::instrument;
 
 use crate::{
     amm::{AutomatedMarketMaker, AMM},
-    bindings,
+    bindings::{
+        self, getcamelotv3pooldatabatchrequest::GetCamelotV3PoolDataBatchRequest,
+        getcamelotv3tickdatabatchrequest::GetCamelotV3TickDataBatchRequest,
+        synccamelotv3poolbatchrequest::SyncCamelotV3PoolBatchRequest,
+    },
     errors::AMMError,
 };
 
@@ -46,7 +50,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = bindings::getcamelotv3pooldatabatchrequest::GetCamelotV3PoolDataBatchRequest::deploy_builder(provider, vec![pool.address]);
+    let deployer = GetCamelotV3PoolDataBatchRequest::deploy_builder(provider, vec![pool.address]);
     let res = if let Some(block_number) = block_number {
         deployer.block(block_number.into()).call_raw().await?
     } else {
@@ -100,7 +104,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = bindings::getcamelotv3tickdatabatchrequest::GetCamelotV3TickDataBatchRequest::deploy_builder(
+    let deployer = GetCamelotV3TickDataBatchRequest::deploy_builder(
         provider,
         pool.address,
         zero_for_one,
@@ -178,11 +182,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer =
-        bindings::synccamelotv3poolbatchrequest::SyncCamelotV3PoolBatchRequest::deploy_builder(
-            provider,
-            vec![pool.address],
-        );
+    let deployer = SyncCamelotV3PoolBatchRequest::deploy_builder(provider, vec![pool.address]);
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
@@ -248,11 +248,7 @@ where
         target_addresses.push(amm.address());
     }
 
-    let deployer =
-        bindings::getcamelotv3pooldatabatchrequest::GetCamelotV3PoolDataBatchRequest::deploy_builder(
-            provider,
-            target_addresses,
-        );
+    let deployer = GetCamelotV3PoolDataBatchRequest::deploy_builder(provider, target_addresses);
     let res = deployer.block(block_number.into()).call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![

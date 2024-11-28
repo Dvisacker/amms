@@ -1,6 +1,10 @@
 use std::sync::Arc;
 
-use crate::{amm::AutomatedMarketMaker, bindings, errors::AMMError};
+use crate::{
+    amm::AutomatedMarketMaker,
+    bindings::{self, geterc4626vaultdatabatchrequest::GetERC4626VaultDataBatchRequest},
+    errors::AMMError,
+};
 
 use alloy::{
     dyn_abi::{DynSolType, DynSolValue},
@@ -70,10 +74,7 @@ where
     P: Provider<T, N>,
 {
     let deployer =
-        bindings::geterc4626vaultdatabatchrequest::GetERC4626VaultDataBatchRequest::deploy_builder(
-            provider,
-            vec![vault.vault_token],
-        );
+        GetERC4626VaultDataBatchRequest::deploy_builder(provider, vec![vault.vault_token]);
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
