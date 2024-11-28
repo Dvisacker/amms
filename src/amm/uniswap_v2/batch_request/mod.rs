@@ -1,7 +1,7 @@
 use alloy::{
     dyn_abi::{DynSolType, DynSolValue},
     network::Network,
-    primitives::{Address, U256},
+    primitives::{address, Address, U256},
     providers::Provider,
     sol,
     transports::Transport,
@@ -10,31 +10,14 @@ use std::sync::Arc;
 
 use crate::{
     amm::{AutomatedMarketMaker, AMM},
+    bindings::{
+        self, getuniswapv2pooldatabatchrequest::GetUniswapV2PoolDataBatchRequest,
+        getuniv2pooldata::GetUniV2PoolData,
+    },
     errors::AMMError,
 };
 
 use super::UniswapV2Pool;
-
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetUniswapV2PairsBatchRequest,
-    "src/amm/uniswap_v2/batch_request/GetUniswapV2PairsBatchRequestABI.json"
-}
-
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetUniswapV2PoolDataBatchRequest,
-    "src/amm/uniswap_v2/batch_request/GetUniswapV2PoolDataBatchRequestABI.json"
-}
-
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetUniV2PoolData,
-    "src/amm/uniswap_v2/batch_request/GetUniV2PoolData.json"
-}
 
 #[inline]
 // This is the older version of the function that is to be deprecated
@@ -118,7 +101,10 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetUniswapV2PairsBatchRequest::deploy_builder(provider, from, step, factory);
+    let deployer =
+        bindings::getuniswapv2pairsbatchrequest::GetUniswapV2PairsBatchRequest::deploy_builder(
+            provider, from, step, factory,
+        );
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Address));
@@ -149,10 +135,15 @@ where
 {
     let mut target_addresses = vec![];
     for amm in amms.iter() {
-        target_addresses.push(amm.address());
+        // temp hack
+        if amm.address() != address!("ef4fC624EA1a2Acfd806240Ada70d6802a81Eaf3") {
+            target_addresses.push(amm.address());
+        }
     }
 
-    let deployer = IGetUniswapV2PoolDataBatchRequest::deploy_builder(provider, target_addresses);
+    println!("All target addresses: {:?}", target_addresses);
+
+    let deployer = GetUniswapV2PoolDataBatchRequest::deploy_builder(provider, target_addresses);
     let res = deployer.call().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
@@ -205,7 +196,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetUniV2PoolData::deploy_builder(provider, addresses.to_vec());
+    let deployer = GetUniV2PoolData::deploy_builder(provider, addresses.to_vec());
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![

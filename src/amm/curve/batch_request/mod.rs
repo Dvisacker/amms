@@ -3,21 +3,13 @@ use alloy::{
     network::Network,
     primitives::{Address, U256},
     providers::Provider,
-    sol,
     transports::Transport,
 };
 use std::sync::Arc;
 
-use crate::errors::AMMError;
+use crate::{bindings, errors::AMMError};
 
 use super::CurvePool;
-
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetCurvePoolDataBatchRequest,
-    "src/amm/curve/batch_request/GetCurvePoolDataBatchRequestABI.json"
-}
 
 #[derive(Debug)]
 struct PoolData {
@@ -76,7 +68,10 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetCurvePoolDataBatchRequest::deploy_builder(provider, vec![pool.address]);
+    let deployer = bindings::getcurvepoolbatchrequest::GetCurvePoolBatchRequest::deploy_builder(
+        provider,
+        vec![pool.address],
+    );
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![

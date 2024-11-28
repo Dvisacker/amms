@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{amm::AutomatedMarketMaker, errors::AMMError};
+use crate::{amm::AutomatedMarketMaker, bindings, errors::AMMError};
 
 use alloy::{
     dyn_abi::{DynSolType, DynSolValue},
@@ -12,13 +12,6 @@ use alloy::{
 };
 
 use super::ERC4626Vault;
-
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetERC4626VaultDataBatchRequest,
-    "src/amm/erc_4626/batch_request/GetERC4626VaultDataBatchRequestABI.json"
-}
 
 #[inline]
 fn populate_pool_data_from_tokens(
@@ -77,7 +70,10 @@ where
     P: Provider<T, N>,
 {
     let deployer =
-        IGetERC4626VaultDataBatchRequest::deploy_builder(provider, vec![vault.vault_token]);
+        bindings::geterc4626vaultdatabatchrequest::GetERC4626VaultDataBatchRequest::deploy_builder(
+            provider,
+            vec![vault.vault_token],
+        );
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![

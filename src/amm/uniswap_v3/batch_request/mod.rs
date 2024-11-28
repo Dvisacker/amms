@@ -13,38 +13,44 @@ use tracing::instrument;
 
 use crate::{
     amm::{AutomatedMarketMaker, AMM},
+    bindings::{
+        getuniswapv3pooldatabatchrequest::GetUniswapV3PoolDataBatchRequest,
+        getuniswapv3tickdatabatchrequest::GetUniswapV3TickDataBatchRequest,
+        getuniv3pooldata::GetUniV3PoolData,
+        syncuniswapv3poolbatchrequest::SyncUniswapV3PoolBatchRequest,
+    },
     errors::AMMError,
 };
 
 use super::UniswapV3Pool;
 
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetUniswapV3PoolDataBatchRequest,
-    "src/amm/uniswap_v3/batch_request/GetUniswapV3PoolDataBatchRequestABI.json"
-}
+// sol! {
+//     #[allow(missing_docs)]
+//     #[sol(rpc)]
+//     IGetUniswapV3PoolDataBatchRequest,
+//     "src/amm/uniswap_v3/batch_request/GetUniswapV3PoolDataBatchRequestABI.json"
+// }
 
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetUniswapV3TickDataBatchRequest,
-    "src/amm/uniswap_v3/batch_request/GetUniswapV3TickDataBatchRequestABI.json"
-}
+// sol! {
+//     #[allow(missing_docs)]
+//     #[sol(rpc)]
+//     IGetUniswapV3TickDataBatchRequest,
+//     "src/amm/uniswap_v3/batch_request/GetUniswapV3TickDataBatchRequestABI.json"
+// }
 
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    ISyncUniswapV3PoolBatchRequest,
-    "src/amm/uniswap_v3/batch_request/SyncUniswapV3PoolBatchRequestABI.json"
-}
+// sol! {
+//     #[allow(missing_docs)]
+//     #[sol(rpc)]
+//     ISyncUniswapV3PoolBatchRequest,
+//     "src/amm/uniswap_v3/batch_request/SyncUniswapV3PoolBatchRequestABI.json"
+// }
 
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetUniV3PoolData,
-    "src/amm/uniswap_v3/batch_request/GetUniV3PoolData.json"
-}
+// sol! {
+//     #[allow(missing_docs)]
+//     #[sol(rpc)]
+//     IGetUniV3PoolData,
+//     "src/amm/uniswap_v3/batch_request/GetUniV3PoolData.json"
+// }
 
 sol! {
     struct TickData {
@@ -197,7 +203,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetUniV3PoolData::deploy_builder(provider, addresses.to_vec());
+    let deployer = GetUniV3PoolData::deploy_builder(provider, addresses.to_vec());
     let res = if let Some(block_number) = block_number {
         deployer.block(block_number.into()).call_raw().await?
     } else {
@@ -290,7 +296,7 @@ where
     let bn = block_number.unwrap_or(0);
 
     while last_tick < tick_start + num_ticks as i32 {
-        let deployer = IGetUniswapV3TickDataBatchRequest::deploy_builder(
+        let deployer = GetUniswapV3TickDataBatchRequest::deploy_builder(
             provider.clone(),
             pool.address,
             zero_for_one,
@@ -335,7 +341,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = ISyncUniswapV3PoolBatchRequest::deploy_builder(provider, vec![pool.address]);
+    let deployer = SyncUniswapV3PoolBatchRequest::deploy_builder(provider, vec![pool.address]);
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
@@ -401,7 +407,7 @@ where
         target_addresses.push(amm.address());
     }
 
-    let deployer = IGetUniswapV3PoolDataBatchRequest::deploy_builder(provider, target_addresses);
+    let deployer = GetUniswapV3PoolDataBatchRequest::deploy_builder(provider, target_addresses);
     let res = deployer.block(block_number.into()).call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![

@@ -14,13 +14,16 @@ use async_trait::async_trait;
 use types::exchange::{ExchangeName, ExchangeType};
 
 use crate::{
-    amm::{factory::AutomatedMarketMakerFactory, ve33::batch_request, AMM},
+    amm::{
+        consts::U256_1,
+        factory::AutomatedMarketMakerFactory,
+        uniswap_v2::{self, UniswapV2Pool},
+        ve33, AMM,
+    },
     errors::AMMError,
 };
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
-
-use super::{Ve33Pool, U256_1};
 
 sol! {
     /// Interface of the Ve33Factory contract
@@ -50,7 +53,7 @@ impl Ve33Factory {
         }
     }
 
-    pub async fn get_all_pairs_via_batched_calls<T, N, P>(
+    pub async fn get_all_pools_batched<T, N, P>(
         &self,
         provider: Arc<P>,
     ) -> Result<Vec<AMM>, AMMError>
@@ -59,7 +62,6 @@ impl Ve33Factory {
         N: Network,
         P: Provider<T, N>,
     {
-        tracing::info!("Getting all pairs from factory {:?}", self.address);
         let factory = IVe33Factory::new(self.address, provider.clone());
 
         let IVe33Factory::allPoolsLengthReturn {
@@ -81,7 +83,7 @@ impl Ve33Factory {
         for _ in (0..pools_length.to::<usize>()).step_by(step) {
             tracing::info!("Getting pools from index {:?} to {:?}", idx_from, idx_to);
             pools.append(
-                &mut batch_request::get_pools_batch_request(
+                &mut ve33::batch_request::get_pools_batch_request(
                     self.address,
                     idx_from,
                     idx_to,
@@ -103,12 +105,12 @@ impl Ve33Factory {
 
         // Create new empty pools for each pair
         for addr in pools {
-            let amm = Ve33Pool {
+            let amm = UniswapV2Pool {
                 address: addr,
                 ..Default::default()
             };
 
-            amms.push(AMM::Ve33Pool(amm));
+            amms.push(AMM::UniswapV2Pool(amm));
         }
 
         Ok(amms)
@@ -132,15 +134,15 @@ impl AutomatedMarketMakerFactory for Ve33Factory {
         P: Provider<T, N>,
     {
         let pair_created_event = IVe33Factory::PairCreated::decode_log(log.as_ref(), true)?;
-        Ok(AMM::Ve33Pool(
-            Ve33Pool::new_from_address(pair_created_event.pair, self.fee, provider).await?,
+        Ok(AMM::UniswapV2Pool(
+            UniswapV2Pool::new_from_address(pair_created_event.pair, self.fee, provider).await?,
         ))
     }
 
     fn new_empty_amm_from_log(&self, log: Log) -> Result<AMM, alloy::sol_types::Error> {
         let pair_created_event = IVe33Factory::PairCreated::decode_log(log.as_ref(), true)?;
 
-        Ok(AMM::Ve33Pool(Ve33Pool {
+        Ok(AMM::UniswapV2Pool(UniswapV2Pool {
             address: pair_created_event.pair,
             token_a: pair_created_event.token0,
             token_a_symbol: String::new(),
@@ -158,11 +160,11 @@ impl AutomatedMarketMakerFactory for Ve33Factory {
         }))
     }
 
-    #[instrument(skip(self, middleware) level = "debug")]
+    #[instrument(skip(self, provider) level = "debug")]
     async fn get_all_amms<T, N, P>(
         &self,
         _to_block: Option<u64>,
-        middleware: Arc<P>,
+        provider: Arc<P>,
         _step: u64,
     ) -> Result<Vec<AMM>, AMMError>
     where
@@ -170,14 +172,14 @@ impl AutomatedMarketMakerFactory for Ve33Factory {
         N: Network,
         P: Provider<T, N>,
     {
-        self.get_all_pairs_via_batched_calls(middleware).await
+        self.get_all_pools_batched(provider).await
     }
 
     async fn populate_amm_data<T, N, P>(
         &self,
         amms: &mut [AMM],
         _block_number: Option<u64>,
-        middleware: Arc<P>,
+        provider: Arc<P>,
     ) -> Result<(), AMMError>
     where
         T: Transport + Clone,
@@ -187,7 +189,8 @@ impl AutomatedMarketMakerFactory for Ve33Factory {
         // Max batch size for call
         let step = 127;
         for amm_chunk in amms.chunks_mut(step) {
-            batch_request::get_amm_data_batch_request(amm_chunk, middleware.clone()).await?;
+            uniswap_v2::batch_request::get_amm_data_batch_request(amm_chunk, provider.clone())
+                .await?;
         }
         Ok(())
     }

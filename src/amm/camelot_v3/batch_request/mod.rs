@@ -12,31 +12,11 @@ use tracing::instrument;
 
 use crate::{
     amm::{AutomatedMarketMaker, AMM},
+    bindings,
     errors::AMMError,
 };
 
 use super::CamelotV3Pool;
-
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetCamelotV3PoolDataBatchRequest,
-    "src/amm/camelot_v3/batch_request/GetCamelotV3PoolDataBatchRequestABI.json"
-}
-
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    IGetCamelotV3TickDataBatchRequest,
-    "src/amm/camelot_v3/batch_request/GetCamelotV3TickDataBatchRequestABI.json"
-}
-
-sol! {
-    #[allow(missing_docs)]
-    #[sol(rpc)]
-    ISyncCamelotV3PoolBatchRequest,
-    "src/amm/camelot_v3/batch_request/SyncCamelotV3PoolBatchRequestABI.json"
-}
 
 #[inline]
 fn populate_pool_data_from_tokens(
@@ -66,7 +46,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetCamelotV3PoolDataBatchRequest::deploy_builder(provider, vec![pool.address]);
+    let deployer = bindings::getcamelotv3pooldatabatchrequest::GetCamelotV3PoolDataBatchRequest::deploy_builder(provider, vec![pool.address]);
     let res = if let Some(block_number) = block_number {
         deployer.block(block_number.into()).call_raw().await?
     } else {
@@ -120,7 +100,7 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = IGetCamelotV3TickDataBatchRequest::deploy_builder(
+    let deployer = bindings::getcamelotv3tickdatabatchrequest::GetCamelotV3TickDataBatchRequest::deploy_builder(
         provider,
         pool.address,
         zero_for_one,
@@ -198,7 +178,11 @@ where
     N: Network,
     P: Provider<T, N>,
 {
-    let deployer = ISyncCamelotV3PoolBatchRequest::deploy_builder(provider, vec![pool.address]);
+    let deployer =
+        bindings::synccamelotv3poolbatchrequest::SyncCamelotV3PoolBatchRequest::deploy_builder(
+            provider,
+            vec![pool.address],
+        );
     let res = deployer.call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
@@ -264,7 +248,11 @@ where
         target_addresses.push(amm.address());
     }
 
-    let deployer = IGetCamelotV3PoolDataBatchRequest::deploy_builder(provider, target_addresses);
+    let deployer =
+        bindings::getcamelotv3pooldatabatchrequest::GetCamelotV3PoolDataBatchRequest::deploy_builder(
+            provider,
+            target_addresses,
+        );
     let res = deployer.block(block_number.into()).call_raw().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
