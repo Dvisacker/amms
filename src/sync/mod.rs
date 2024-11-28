@@ -143,19 +143,6 @@ where
                 }
             }
 
-            AMM::Ve33Pool(_) => {
-                let step = 76;
-                tracing::info!("Populating ve33 amms");
-                for amm_chunk in amms.chunks_mut(step) {
-                    // the same batch request should work for ve33
-                    uniswap_v2::batch_request::get_amm_data_batch_request(
-                        amm_chunk,
-                        provider.clone(),
-                    )
-                    .await?;
-                }
-            }
-
             // TODO: Implement batch request
             AMM::ERC4626Vault(_) => {
                 for amm in amms {

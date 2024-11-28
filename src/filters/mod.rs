@@ -33,11 +33,6 @@ pub fn filter_empty_amms(amms: Vec<AMM>) -> Vec<AMM> {
                     cleaned_amms.push(amm)
                 }
             }
-            AMM::Ve33Pool(ref ve33_pool) => {
-                if !ve33_pool.token_a.is_zero() && !ve33_pool.token_b.is_zero() {
-                    cleaned_amms.push(amm)
-                }
-            }
         }
     }
 
