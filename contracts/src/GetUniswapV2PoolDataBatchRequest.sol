@@ -90,7 +90,15 @@ contract GetUniswapV2PoolDataBatchRequest {
             }
 
             // Get reserves
-            (poolData.reserve0, poolData.reserve1,) = IUniswapV2Pair(poolAddress).getReserves();
+            try IUniswapV2Pair(poolAddress).getReserves() returns (
+                uint112 _reserve0, uint112 _reserve1, uint32 /*_blockTimestampLast*/
+            ) {
+                poolData.reserve0 = _reserve0;
+                poolData.reserve1 = _reserve1;
+            } catch {
+                poolData.reserve0 = 0;
+                poolData.reserve1 = 0;
+            }
 
             allPoolData[i] = poolData;
         }
