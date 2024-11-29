@@ -261,9 +261,8 @@ where
 mod tests {
     use super::*;
     use crate::amm::ExchangeType;
-    use alloy::providers::ProviderBuilder;
     use alloy_chains::{Chain, NamedChain};
-    use config::get_chain_config;
+    use provider::get_basic_provider;
     use std::{env, str::FromStr};
     use types::exchange::ExchangeName;
 
@@ -274,8 +273,7 @@ mod tests {
     async fn test_get_amm_data_batch_request() {
         // Get RPC URL from environment variable, or use default
         dotenv::dotenv().ok();
-        let config = get_chain_config(Chain::from_named(NamedChain::Base)).await;
-        let provider = config.ws;
+        let provider = get_basic_provider(Chain::from_named(NamedChain::Base)).await;
 
         // Create a test pool
         let pool_address = Address::from_str(VE33_POOL_ADDRESS).expect("Invalid address");
