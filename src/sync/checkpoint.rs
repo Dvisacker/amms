@@ -8,7 +8,7 @@ use std::{
 
 use alloy::{network::Network, primitives::Address, providers::Provider, transports::Transport};
 
-use crate::amm::{ve33::factory::Ve33Factory, AutomatedMarketMaker};
+use crate::amm::AutomatedMarketMaker;
 use serde::{Deserialize, Serialize};
 
 use tokio::task::JoinHandle;
@@ -207,6 +207,7 @@ where
         AMM::ERC4626Vault(_) => None,
         AMM::CamelotV3Pool(_) => None,
         AMM::CurvePool(_) => None,
+        AMM::Ve33Pool(_) => None,
     };
 
     // Spawn a new thread to get all pools and sync data for each dex

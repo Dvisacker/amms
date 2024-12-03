@@ -30,7 +30,6 @@ pub mod iuniswapv2factory;
 pub mod iuniswapv3factory;
 pub mod iaerodromeclpool;
 pub mod iaerodromepool;
-pub mod ipool;
 pub mod ierc165;
 pub mod ierc721;
 pub mod ierc721enumerable;

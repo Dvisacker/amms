@@ -4,7 +4,7 @@ use crate::{
     amm::{
         camelot_v3,
         factory::{AutomatedMarketMakerFactory, Factory},
-        uniswap_v2, uniswap_v3, AutomatedMarketMaker, AMM,
+        uniswap_v2, uniswap_v3, ve33, AutomatedMarketMaker, AMM,
     },
     errors::AMMError,
     filters,
@@ -116,7 +116,6 @@ where
                     .await?;
                 }
             }
-
             AMM::UniswapV3Pool(_) => {
                 let step = 76;
                 tracing::info!("Populating uniswap v3 amms");
@@ -129,7 +128,14 @@ where
                     .await?;
                 }
             }
-
+            AMM::Ve33Pool(_) => {
+                let step = 127;
+                tracing::info!("Populating uniswap ve33 amms");
+                for amm_chunk in amms.chunks_mut(step) {
+                    ve33::batch_request::get_amm_data_batch_request(amm_chunk, provider.clone())
+                        .await?;
+                }
+            }
             AMM::CamelotV3Pool(_) => {
                 let step = 76;
                 tracing::info!("Populating camelot v3 amms");
@@ -142,8 +148,6 @@ where
                     .await?;
                 }
             }
-
-            // TODO: Implement batch request
             AMM::ERC4626Vault(_) => {
                 for amm in amms {
                     amm.populate_data(None, provider.clone()).await?;

@@ -1,14 +1,6 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-library IPool {
-    struct Observation {
-        uint256 timestamp;
-        uint256 reserve0Cumulative;
-        uint256 reserve1Cumulative;
-    }
-}
-
 interface IAerodromePool {
     error BelowMinimumK();
     error DepositsNotEqual();
@@ -76,7 +68,6 @@ interface IAerodromePool {
     function index0() external view returns (uint256);
     function index1() external view returns (uint256);
     function initialize(address _token0, address _token1, bool _stable) external;
-    function lastObservation() external view returns (IPool.Observation memory);
     function metadata()
         external
         view
