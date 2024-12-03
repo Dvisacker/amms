@@ -1,4 +1,5 @@
-pragma solidity ^0.8.4;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
 library IPool {
     struct Observation {
@@ -8,7 +9,7 @@ library IPool {
     }
 }
 
-interface Pool {
+interface IAerodromePool {
     error BelowMinimumK();
     error DepositsNotEqual();
     error FactoryAlreadySet();

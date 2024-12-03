@@ -1,6 +1,7 @@
-pragma solidity ^0.8.4;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-interface CLPool {
+interface IAerodromeCLPool {
     event Burn(
         address indexed owner,
         int24 indexed tickLower,

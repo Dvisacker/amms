@@ -1,4 +1,7 @@
-interface Vyper_contract {
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+interface ICurvePool {
     event AddLiquidity(
         address indexed provider, uint256[2] token_amounts, uint256[2] fees, uint256 invariant, uint256 token_supply
     );

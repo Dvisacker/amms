@@ -1,6 +1,7 @@
-pragma solidity ^0.8.4;
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
-interface UniswapV2Pair {
+interface IUniswapV2Pool {
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Burn(address indexed sender, uint256 amount0, uint256 amount1, address indexed to);
     event Mint(address indexed sender, uint256 amount0, uint256 amount1);
