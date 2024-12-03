@@ -40,12 +40,12 @@ pub mod GetDetailedPoolDataBatchRequest {
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x60806040525f80fdfea26469706673582212204e8c3603805a699bcba6f51de4122da1b0cb68d02334966a41ff93d6f582d8fe64736f6c634300081a0033
+    ///0x60806040525f80fdfea2646970667358221220ca6f2e2b9be7c764f7ddfe955537d2935696261e7cc27edcaf2d7750d7d2575064736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 N\x8C6\x03\x80Zi\x9B\xCB\xA6\xF5\x1D\xE4\x12-\xA1\xB0\xCBh\xD0#4\x96jA\xFF\x93\xD6\xF5\x82\xD8\xFEdsolcC\0\x08\x1A\x003",
+        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xCAo.+\x9B\xE7\xC7d\xF7\xDD\xFE\x95U7\xD2\x93V\x96&\x1E|\xC2~\xDC\xAF-wP\xD7\xD2WPdsolcC\0\x08\x1A\x003",
     );
     /**Constructor`.
 ```solidity

@@ -1,15 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IUniswapV2Pair {
-    function token0() external view returns (address);
-
-    function token1() external view returns (address);
-
-    function factory() external view returns (address);
-
-    function getReserves() external view returns (uint256 reserve0, uint256 reserve1, uint32 blockTimestampLast);
-}
+import "./IUniswapV2Pool.sol";
 
 interface IERC20 {
     function decimals() external view returns (uint8);
@@ -43,8 +35,8 @@ contract GetUniV2PoolData {
 
             PoolData memory poolData;
 
-            poolData.tokenA = IUniswapV2Pair(poolAddress).token0();
-            poolData.tokenB = IUniswapV2Pair(poolAddress).token1();
+            poolData.tokenA = IUniswapV2Pool(poolAddress).token0();
+            poolData.tokenB = IUniswapV2Pool(poolAddress).token1();
 
             //Check that tokenA and tokenB do not have codesize of 0
             if (codeSizeIsZero(poolData.tokenA)) continue;
@@ -124,14 +116,14 @@ contract GetUniV2PoolData {
                 poolData.tokenBSymbol = bytes32(0);
             }
 
-            try IUniswapV2Pair(poolAddress).factory() returns (address _factory) {
+            try IUniswapV2Pool(poolAddress).factory() returns (address _factory) {
                 poolData.factory = _factory;
             } catch {
                 poolData.factory = address(0);
             }
 
-            try IUniswapV2Pair(poolAddress).getReserves() returns (
-                uint256 _reserve0, uint256 _reserve1, uint32 /*_blockTimestampLast*/
+            try IUniswapV2Pool(poolAddress).getReserves() returns (
+                uint112 _reserve0, uint112 _reserve1, uint32 /*_blockTimestampLast*/
             ) {
                 if (_reserve0 > type(uint112).max || _reserve1 > type(uint112).max) {
                     poolData.reserve0 = 0;

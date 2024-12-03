@@ -40,12 +40,12 @@ pub mod GetUniV3PoolData {
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x60806040525f80fdfea2646970667358221220f99caeed6b087120a557f90eb0ee746ed0a9691a4b3ae73f4a25ef55b0b156dc64736f6c634300081a0033
+    ///0x60806040525f80fdfea264697066735822122052ef52edae223415f2fa68c559f6b773560a45dfe9816e2f4aa2dfc59474ff8264736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xF9\x9C\xAE\xEDk\x08q \xA5W\xF9\x0E\xB0\xEEtn\xD0\xA9i\x1AK:\xE7?J%\xEFU\xB0\xB1V\xDCdsolcC\0\x08\x1A\x003",
+        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 R\xEFR\xED\xAE\"4\x15\xF2\xFAh\xC5Y\xF6\xB7sV\nE\xDF\xE9\x81n/J\xA2\xDF\xC5\x94t\xFF\x82dsolcC\0\x08\x1A\x003",
     );
     /**Constructor`.
 ```solidity

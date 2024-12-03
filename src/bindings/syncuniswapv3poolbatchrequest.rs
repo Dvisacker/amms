@@ -40,12 +40,12 @@ pub mod SyncUniswapV3PoolBatchRequest {
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x60806040525f80fdfea2646970667358221220d9bf8a267566cdf6fa13ee47f8d03c4c5863f3d92d9734c266a6907ec576b4b564736f6c634300081a0033
+    ///0x60806040525f80fdfea26469706673582212203dc6f45a21a703987cf7f01fafa36e00f55c74c1525d7adece4bba075b7009e564736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xD9\xBF\x8A&uf\xCD\xF6\xFA\x13\xEEG\xF8\xD0<LXc\xF3\xD9-\x974\xC2f\xA6\x90~\xC5v\xB4\xB5dsolcC\0\x08\x1A\x003",
+        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 =\xC6\xF4Z!\xA7\x03\x98|\xF7\xF0\x1F\xAF\xA3n\0\xF5\\t\xC1R]z\xDE\xCEK\xBA\x07[p\t\xE5dsolcC\0\x08\x1A\x003",
     );
     /**Constructor`.
 ```solidity
