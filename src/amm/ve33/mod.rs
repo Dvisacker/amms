@@ -189,12 +189,14 @@ impl AutomatedMarketMaker for Ve33Pool {
                 amount_in,
                 U256::from(self.reserve_0),
                 U256::from(self.reserve_1),
+                self.stable,
             ))
         } else {
             Ok(self.get_amount_out(
                 amount_in,
                 U256::from(self.reserve_1),
                 U256::from(self.reserve_0),
+                self.stable,
             ))
         }
     }
@@ -210,6 +212,7 @@ impl AutomatedMarketMaker for Ve33Pool {
                 amount_in,
                 U256::from(self.reserve_0),
                 U256::from(self.reserve_1),
+                self.stable,
             );
 
             tracing::trace!(?amount_out);
@@ -226,6 +229,7 @@ impl AutomatedMarketMaker for Ve33Pool {
                 amount_in,
                 U256::from(self.reserve_1),
                 U256::from(self.reserve_0),
+                self.stable,
             );
 
             tracing::trace!(?amount_out);
@@ -559,21 +563,167 @@ impl Ve33Pool {
         }
     }
 
-    /// Calculates the amount received for a given `amount_in` `reserve_in` and `reserve_out`.
-    pub fn get_amount_out(&self, amount_in: U256, reserve_in: U256, reserve_out: U256) -> U256 {
-        tracing::trace!(?amount_in, ?reserve_in, ?reserve_out);
+    pub fn get_amount_out(
+        &self,
+        amount_in: U256,
+        reserve_in: U256,
+        reserve_out: U256,
+        stable: bool,
+    ) -> U256 {
+        tracing::trace!(?amount_in, ?reserve_in, ?reserve_out, ?stable);
 
         if amount_in.is_zero() || reserve_in.is_zero() || reserve_out.is_zero() {
             return U256::ZERO;
         }
-        let fee = (10000 - (self.fee / 10)) / 10; //Fee of 300 => (10,000 - 30) / 10  = 997
-        let amount_in_with_fee = amount_in * U256::from(fee);
-        let numerator = amount_in_with_fee * reserve_out;
-        let denominator = reserve_in * U256::from(1000) + amount_in_with_fee;
 
-        tracing::trace!(?fee, ?amount_in_with_fee, ?numerator, ?denominator);
+        // Aerodrome fees:
+        // STABLE_FEE = 10 (0.01%)
+        // VOLATILE_FEE = 300 (0.3%)
+        // FEE_DENOMINATOR = 100000
+        let fee = if stable { 10 } else { 300 };
 
-        numerator / denominator
+        // Apply fee: amount_in * (FEE_DENOMINATOR - fee) / FEE_DENOMINATOR
+        let amount_in_with_fee = amount_in * U256::from(100000 - fee) / U256::from(100000);
+
+        if stable {
+            self.get_amount_out_stable(amount_in_with_fee, reserve_in, reserve_out)
+                .expect("Failed to get amount out")
+        } else {
+            self.get_amount_out_volatile(amount_in_with_fee, reserve_in, reserve_out)
+                .expect("Failed to get amount out")
+        }
+    }
+
+    fn get_amount_out_volatile(
+        &self,
+        amount_in: U256,
+        reserve_in: U256,
+        reserve_out: U256,
+    ) -> Result<U256, AMMError> {
+        let numerator = amount_in * reserve_out;
+        let denominator = reserve_in + amount_in;
+        Ok(numerator / denominator)
+    }
+
+    fn get_amount_out_stable(
+        &self,
+        amount_in: U256,
+        token_in: Address,
+        reserve0: U256,
+        reserve1: U256,
+    ) -> Result<U256, AMMError> {
+        if self.stable {
+            let xy = self._k(reserve0, reserve1)?;
+
+            // Scale reserves to 18 decimals
+            let reserve0 = (reserve0 * U256::from(10).pow(U256::from(18)))
+                / U256::from(10).pow(U256::from(self.token_a_decimals));
+            let reserve1 = (reserve1 * U256::from(10).pow(U256::from(18)))
+                / U256::from(10).pow(U256::from(self.token_b_decimals));
+
+            let (reserve_a, reserve_b) = if token_in == self.token_a {
+                (reserve0, reserve1)
+            } else {
+                (reserve1, reserve0)
+            };
+
+            // Scale amount_in to 18 decimals
+            let amount_in = if token_in == self.token_a {
+                (amount_in * U256::from(10).pow(U256::from(18)))
+                    / U256::from(10).pow(U256::from(self.token_a_decimals))
+            } else {
+                (amount_in * U256::from(10).pow(U256::from(18)))
+                    / U256::from(10).pow(U256::from(self.token_b_decimals))
+            };
+
+            let y = reserve_b - self._get_y(amount_in + reserve_a, xy, reserve_b)?;
+
+            // Scale back to token decimals
+            Ok((y * if token_in == self.token_a {
+                U256::from(10).pow(U256::from(self.token_b_decimals))
+            } else {
+                U256::from(10).pow(U256::from(self.token_a_decimals))
+            }) / U256::from(10).pow(U256::from(18)))
+        } else {
+            let (reserve_a, reserve_b) = if token_in == self.token_a {
+                (reserve0, reserve1)
+            } else {
+                (reserve1, reserve0)
+            };
+
+            Ok((amount_in * reserve_b) / (reserve_a + amount_in))
+        }
+    }
+
+    fn _k(&self, x: U256, y: U256) -> Result<U256, AMMError> {
+        if self.stable {
+            let x = (x * U256::from(10).pow(U256::from(18)))
+                / U256::from(10).pow(U256::from(self.token_a_decimals));
+            let y = (y * U256::from(10).pow(U256::from(18)))
+                / U256::from(10).pow(U256::from(self.token_b_decimals));
+
+            let a = (x * y) / U256::from(10).pow(U256::from(18));
+            let b = ((x * x) / U256::from(10).pow(U256::from(18))
+                + (y * y) / U256::from(10).pow(U256::from(18)));
+
+            Ok((a * b) / U256::from(10).pow(U256::from(18))) // x3y+y3x >= k
+        } else {
+            Ok(x * y) // xy >= k
+        }
+    }
+
+    fn _f(&self, x0: U256, y: U256) -> U256 {
+        let a = (x0 * y) / U256::from(10).pow(U256::from(18));
+        let b = ((x0 * x0) / U256::from(10).pow(U256::from(18))
+            + (y * y) / U256::from(10).pow(U256::from(18)));
+
+        (a * b) / U256::from(10).pow(U256::from(18))
+    }
+
+    fn _d(&self, x0: U256, y: U256) -> U256 {
+        let term1 = (U256::from(3) * x0 * ((y * y) / U256::from(10).pow(U256::from(18))))
+            / U256::from(10).pow(U256::from(18));
+        let term2 = ((x0 * x0) / U256::from(10).pow(U256::from(18)) * x0)
+            / U256::from(10).pow(U256::from(18));
+
+        term1 + term2
+    }
+
+    fn _get_y(&self, x0: U256, xy: U256, y: U256) -> Result<U256, AMMError> {
+        let mut y = y;
+
+        for _ in 0..255 {
+            let k = self._f(x0, y);
+
+            if k < xy {
+                let dy = ((xy - k) * U256::from(10).pow(U256::from(18))) / self._d(x0, y);
+
+                if dy.is_zero() {
+                    if k == xy {
+                        return Ok(y);
+                    }
+                    if self._k(x0, y + U256::from(1))? > xy {
+                        return Ok(y + U256::from(1));
+                    }
+                    y += U256::from(1);
+                } else {
+                    y += dy;
+                }
+            } else {
+                let dy = ((k - xy) * U256::from(10).pow(U256::from(18))) / self._d(x0, y);
+
+                if dy.is_zero() {
+                    if k == xy || self._f(x0, y - U256::from(1)) < xy {
+                        return Ok(y);
+                    }
+                    y -= U256::from(1);
+                } else {
+                    y -= dy;
+                }
+            }
+        }
+
+        Err(AMMError::FailedToConvergeToY)
     }
 
     /// Returns the calldata for a swap.

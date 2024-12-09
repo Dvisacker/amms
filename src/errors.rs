@@ -32,6 +32,8 @@ pub enum AMMError {
     IOError(#[from] std::io::Error),
     #[error("Error when converting from hex to U256")]
     FromHexError,
+    #[error("Failed to converge to y")] // stableswap
+    FailedToConvergeToY,
     #[error(transparent)]
     UniswapV3MathError(#[from] UniswapV3MathError),
     #[error("Pair for token_a/token_b does not exist in provided dexes")]
