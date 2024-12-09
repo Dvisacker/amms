@@ -129,7 +129,7 @@ where
                 }
             }
             AMM::Ve33Pool(_) => {
-                let step = 127;
+                let step = 100;
                 tracing::info!("Populating uniswap ve33 amms");
                 for amm_chunk in amms.chunks_mut(step) {
                     ve33::batch_request::get_amm_data_batch_request(amm_chunk, provider.clone())

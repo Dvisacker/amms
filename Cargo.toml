@@ -11,13 +11,13 @@ keywords = ["ethereum", "amm", "mev"]
 exclude = ["target/*", ".github/*", ".gitignore"]
 
 [dependencies]
-tokio = { workspace = true }
-uniswap_v3_math = { workspace = true }
-alloy = { workspace = true }
-alloy-chains = { workspace = true }
-tracing = { workspace = true }
-async-recursion = { workspace = true }
-dotenv = { workspace = true }
+tokio = { version = "1.40.0", features = ["full"] }
+uniswap_v3_math = { git = "https://github.com/0xKitsune/uniswap-v3-math.git" }
+alloy = { version = "0.7.0", features = ["full"] }
+alloy-chains = "0.1.27"
+tracing = "0.1.37"
+async-recursion = "1.0.5"
+dotenv = "0.15.0"
 
 db = { path = "../db" }
 types = { path = "../types" }
@@ -47,14 +47,6 @@ criterion = "0.5"
 tokio = { version = "1.40.0", default-features = false, features = [
     "rt-multi-thread",
 ] }
-
-# [[bench]]
-# name = "state_space"
-# harness = false
-
-# [[bench]]
-# name = "uniswapv2_simulate"
-# harness = false
 
 [profile.release]
 opt-level = 3

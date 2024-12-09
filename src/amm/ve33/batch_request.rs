@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use crate::{
     bindings::{
-        getuniswapv2pooldatabatchrequest::GetUniswapV2PoolDataBatchRequest,
+        getve33pooldatabatchrequest::GetVe33PoolDataBatchRequest,
         getve33poolsbatchrequest::GetVe33PoolsBatchRequest,
     },
     errors::AMMError,
@@ -30,6 +30,7 @@ fn populate_pool_data_from_tokens(mut pool: Ve33Pool, tokens: &[DynSolValue]) ->
     pool.token_b_decimals = tokens[3].as_uint()?.0.to::<u8>();
     pool.reserve_0 = tokens[4].as_uint()?.0.to::<u128>();
     pool.reserve_1 = tokens[5].as_uint()?.0.to::<u128>();
+    pool.stable = tokens[6].as_bool()?;
 
     Some(pool)
 }
@@ -82,6 +83,7 @@ pub fn populate_v2_pool_data(pool: &mut Ve33Pool, tokens: &[DynSolValue]) -> Res
     pool.factory = tokens[8]
         .as_address()
         .ok_or(AMMError::BatchRequestError(pool.address))?;
+    pool.stable = tokens[9].as_bool().unwrap_or(false);
 
     Ok(())
 }
@@ -131,7 +133,7 @@ where
         target_addresses.push(amm.address());
     }
 
-    let deployer = GetUniswapV2PoolDataBatchRequest::deploy_builder(provider, target_addresses);
+    let deployer = GetVe33PoolDataBatchRequest::deploy_builder(provider, target_addresses);
     let res = deployer.call().await?;
 
     let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
@@ -141,6 +143,7 @@ where
         DynSolType::Uint(8),
         DynSolType::Uint(112),
         DynSolType::Uint(112),
+        DynSolType::Bool,
     ])));
     let return_data_tokens = constructor_return.abi_decode_sequence(&res)?;
 

@@ -37,6 +37,7 @@ pub struct Ve33Pool {
     pub reserve_0: u128,
     pub reserve_1: u128,
     pub fee: u32,
+    pub stable: bool,
     pub exchange_name: ExchangeName,
     pub exchange_type: ExchangeType,
     #[serde(with = "chain_serde")]
@@ -57,6 +58,7 @@ impl From<NewDbUniV2Pool> for Ve33Pool {
             reserve_0: pool.reserve_0.parse().unwrap_or(0),
             reserve_1: pool.reserve_1.parse().unwrap_or(0),
             fee: pool.fee as u32,
+            stable: false,
             factory: pool
                 .factory_address
                 .unwrap()
@@ -295,6 +297,7 @@ impl Ve33Pool {
         token_b_symbol: String,
         reserve_0: u128,
         reserve_1: u128,
+        stable: bool,
         fee: u32,
         factory: Address,
         exchange_name: ExchangeName,
@@ -311,6 +314,7 @@ impl Ve33Pool {
             token_b_symbol,
             reserve_0,
             reserve_1,
+            stable,
             fee,
             factory,
             exchange_name,
@@ -340,6 +344,7 @@ impl Ve33Pool {
             token_b_symbol: String::new(),
             reserve_0: 0,
             reserve_1: 0,
+            stable: false,
             fee,
             factory: Address::ZERO,
             exchange_name: ExchangeName::Unknown,
@@ -400,6 +405,7 @@ impl Ve33Pool {
                 token_b_decimals: 0,
                 reserve_0: 0,
                 reserve_1: 0,
+                stable: false,
                 fee: 0,
                 factory: Address::ZERO,
                 exchange_name: ExchangeName::UniswapV2,
