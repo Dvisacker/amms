@@ -570,10 +570,10 @@ impl Ve33Pool {
 
         if stable {
             self.get_amount_out_stable(amount_in_with_fee, token_in, reserve_in, reserve_out)
-                .expect("Failed to get amount out")
+                .unwrap_or_else(|_| U256::ZERO)
         } else {
             self.get_amount_out_volatile(amount_in_with_fee, reserve_in, reserve_out)
-                .expect("Failed to get amount out")
+                .unwrap_or_else(|_| U256::ZERO)
         }
     }
 
