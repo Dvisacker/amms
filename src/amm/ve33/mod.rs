@@ -187,6 +187,7 @@ impl AutomatedMarketMaker for Ve33Pool {
         if self.token_a == token_in {
             Ok(self.get_amount_out(
                 amount_in,
+                token_in,
                 U256::from(self.reserve_0),
                 U256::from(self.reserve_1),
                 self.stable,
@@ -194,6 +195,7 @@ impl AutomatedMarketMaker for Ve33Pool {
         } else {
             Ok(self.get_amount_out(
                 amount_in,
+                token_in,
                 U256::from(self.reserve_1),
                 U256::from(self.reserve_0),
                 self.stable,
@@ -210,6 +212,7 @@ impl AutomatedMarketMaker for Ve33Pool {
         if self.token_a == token_in {
             let amount_out = self.get_amount_out(
                 amount_in,
+                token_in,
                 U256::from(self.reserve_0),
                 U256::from(self.reserve_1),
                 self.stable,
@@ -227,6 +230,7 @@ impl AutomatedMarketMaker for Ve33Pool {
         } else {
             let amount_out = self.get_amount_out(
                 amount_in,
+                token_in,
                 U256::from(self.reserve_1),
                 U256::from(self.reserve_0),
                 self.stable,
@@ -243,14 +247,6 @@ impl AutomatedMarketMaker for Ve33Pool {
             Ok(amount_out)
         }
     }
-
-    // fn get_token_out(&self, token_in: Address) -> Address {
-    //     if self.token_a == token_in {
-    //         self.token_b
-    //     } else {
-    //         self.token_a
-    //     }
-    // }
 
     fn token_symbols(&self) -> Vec<String> {
         vec![self.token_a_symbol.clone(), self.token_b_symbol.clone()]
@@ -566,6 +562,7 @@ impl Ve33Pool {
     pub fn get_amount_out(
         &self,
         amount_in: U256,
+        token_in: Address,
         reserve_in: U256,
         reserve_out: U256,
         stable: bool,
@@ -586,7 +583,7 @@ impl Ve33Pool {
         let amount_in_with_fee = amount_in * U256::from(100000 - fee) / U256::from(100000);
 
         if stable {
-            self.get_amount_out_stable(amount_in_with_fee, reserve_in, reserve_out)
+            self.get_amount_out_stable(amount_in_with_fee, token_in, reserve_in, reserve_out)
                 .expect("Failed to get amount out")
         } else {
             self.get_amount_out_volatile(amount_in_with_fee, reserve_in, reserve_out)
@@ -612,47 +609,37 @@ impl Ve33Pool {
         reserve0: U256,
         reserve1: U256,
     ) -> Result<U256, AMMError> {
-        if self.stable {
-            let xy = self._k(reserve0, reserve1)?;
+        let xy = self._k(reserve0, reserve1)?;
 
-            // Scale reserves to 18 decimals
-            let reserve0 = (reserve0 * U256::from(10).pow(U256::from(18)))
-                / U256::from(10).pow(U256::from(self.token_a_decimals));
-            let reserve1 = (reserve1 * U256::from(10).pow(U256::from(18)))
-                / U256::from(10).pow(U256::from(self.token_b_decimals));
+        // Scale reserves to 18 decimals
+        let reserve0 = (reserve0 * U256::from(10).pow(U256::from(18)))
+            / U256::from(10).pow(U256::from(self.token_a_decimals));
+        let reserve1 = (reserve1 * U256::from(10).pow(U256::from(18)))
+            / U256::from(10).pow(U256::from(self.token_b_decimals));
 
-            let (reserve_a, reserve_b) = if token_in == self.token_a {
-                (reserve0, reserve1)
-            } else {
-                (reserve1, reserve0)
-            };
-
-            // Scale amount_in to 18 decimals
-            let amount_in = if token_in == self.token_a {
-                (amount_in * U256::from(10).pow(U256::from(18)))
-                    / U256::from(10).pow(U256::from(self.token_a_decimals))
-            } else {
-                (amount_in * U256::from(10).pow(U256::from(18)))
-                    / U256::from(10).pow(U256::from(self.token_b_decimals))
-            };
-
-            let y = reserve_b - self._get_y(amount_in + reserve_a, xy, reserve_b)?;
-
-            // Scale back to token decimals
-            Ok((y * if token_in == self.token_a {
-                U256::from(10).pow(U256::from(self.token_b_decimals))
-            } else {
-                U256::from(10).pow(U256::from(self.token_a_decimals))
-            }) / U256::from(10).pow(U256::from(18)))
+        let (reserve_a, reserve_b) = if token_in == self.token_a {
+            (reserve0, reserve1)
         } else {
-            let (reserve_a, reserve_b) = if token_in == self.token_a {
-                (reserve0, reserve1)
-            } else {
-                (reserve1, reserve0)
-            };
+            (reserve1, reserve0)
+        };
 
-            Ok((amount_in * reserve_b) / (reserve_a + amount_in))
-        }
+        // Scale amount_in to 18 decimals
+        let amount_in = if token_in == self.token_a {
+            (amount_in * U256::from(10).pow(U256::from(18)))
+                / U256::from(10).pow(U256::from(self.token_a_decimals))
+        } else {
+            (amount_in * U256::from(10).pow(U256::from(18)))
+                / U256::from(10).pow(U256::from(self.token_b_decimals))
+        };
+
+        let y = reserve_b - self._get_y(amount_in + reserve_a, xy, reserve_b)?;
+
+        // Scale back to token decimals
+        Ok((y * if token_in == self.token_a {
+            U256::from(10).pow(U256::from(self.token_b_decimals))
+        } else {
+            U256::from(10).pow(U256::from(self.token_a_decimals))
+        }) / U256::from(10).pow(U256::from(18)))
     }
 
     fn _k(&self, x: U256, y: U256) -> Result<U256, AMMError> {
