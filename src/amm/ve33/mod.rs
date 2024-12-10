@@ -342,9 +342,6 @@ impl Ve33Pool {
 
         pool.populate_data(None, provider.clone()).await?;
 
-        println!("pool: {:?}", pool);
-        tracing::info!("pool: {:?}", pool);
-
         if !pool.data_is_populated() {
             return Err(AMMError::PoolDataError);
         }
