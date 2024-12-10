@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use crate::{
     bindings::{
-        getve33pooldatabatchrequest::GetVe33PoolDataBatchRequest,
+        getve33pooldata::GetVe33PoolData, getve33pooldatabatchrequest::GetVe33PoolDataBatchRequest,
         getve33poolsbatchrequest::GetVe33PoolsBatchRequest,
     },
     errors::AMMError,
@@ -41,7 +41,10 @@ fn bytes32_to_string(bytes: &[u8]) -> String {
     result
 }
 
-pub fn populate_v2_pool_data(pool: &mut Ve33Pool, tokens: &[DynSolValue]) -> Result<(), AMMError> {
+pub fn populate_ve33_pool_data(
+    pool: &mut Ve33Pool,
+    tokens: &[DynSolValue],
+) -> Result<(), AMMError> {
     pool.token_a = tokens[0]
         .as_address()
         .ok_or(AMMError::BatchRequestError(pool.address))?;
@@ -166,6 +169,76 @@ where
                                 *ve33_pool = pool;
                             }
                         }
+                    }
+                }
+
+                pool_idx += 1;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+pub async fn fetch_ve33_pool_data_batch_request<T, N, P>(
+    addresses: &[Address],
+    provider: Arc<P>,
+) -> Result<DynSolValue, AMMError>
+where
+    T: Transport + Clone,
+    N: Network,
+    P: Provider<T, N>,
+{
+    let deployer = GetVe33PoolData::deploy_builder(provider, addresses.to_vec());
+    let res = deployer.call_raw().await?;
+
+    let constructor_return = DynSolType::Array(Box::new(DynSolType::Tuple(vec![
+        DynSolType::Address,        //token a
+        DynSolType::FixedBytes(32), //token a symbol
+        DynSolType::Uint(8),        //token a decimals
+        DynSolType::Address,        //token b
+        DynSolType::FixedBytes(32), //token b symbol
+        DynSolType::Uint(8),        //token b decimals
+        DynSolType::Uint(256),      //reserve 0
+        DynSolType::Uint(256),      //reserve 1
+        DynSolType::Address,        //factory address
+        DynSolType::Bool,           //stable
+    ])));
+
+    let return_data = constructor_return.abi_decode_sequence(&res)?;
+
+    Ok(return_data)
+}
+
+pub async fn get_ve33_pool_data_batch_request<T, N, P>(
+    pools: &mut [Ve33Pool],
+    provider: Arc<P>,
+) -> Result<(), AMMError>
+where
+    T: Transport + Clone,
+    N: Network,
+    P: Provider<T, N>,
+{
+    let mut target_addresses = vec![];
+    for pool in pools.iter() {
+        target_addresses.push(pool.address);
+    }
+
+    let return_data = fetch_ve33_pool_data_batch_request(&target_addresses, provider).await?;
+
+    let mut pool_idx = 0;
+    if let Some(tokens_arr) = return_data.as_array() {
+        for token in tokens_arr {
+            if let Some(pool_data) = token.as_tuple() {
+                // If the pool token A is not zero, signaling that the pool data was polulated
+                if let Some(address) = pool_data[0].as_address() {
+                    if !address.is_zero() {
+                        // Update the pool data
+                        let ve33_pool = pools
+                            .get_mut(pool_idx)
+                            .expect("Pool idx should be in bounds");
+
+                        populate_ve33_pool_data(ve33_pool, pool_data)?;
                     }
                 }
 

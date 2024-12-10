@@ -132,10 +132,8 @@ impl AutomatedMarketMaker for Ve33Pool {
         N: Network,
         P: Provider<T, N>,
     {
-        batch_request::get_pools_batch_request(
-            self.factory,
-            U256::from(0),
-            U256::from(1000),
+        batch_request::get_ve33_pool_data_batch_request(
+            std::slice::from_mut(self),
             provider.clone(),
         )
         .await?;
@@ -184,23 +182,13 @@ impl AutomatedMarketMaker for Ve33Pool {
         amount_in: U256,
         _token_out: Address,
     ) -> Result<U256, SwapSimulationError> {
-        if self.token_a == token_in {
-            Ok(self.get_amount_out(
-                amount_in,
-                token_in,
-                U256::from(self.reserve_0),
-                U256::from(self.reserve_1),
-                self.stable,
-            ))
-        } else {
-            Ok(self.get_amount_out(
-                amount_in,
-                token_in,
-                U256::from(self.reserve_1),
-                U256::from(self.reserve_0),
-                self.stable,
-            ))
-        }
+        Ok(self.get_amount_out(
+            amount_in,
+            token_in,
+            U256::from(self.reserve_0),
+            U256::from(self.reserve_1),
+            self.stable,
+        ))
     }
 
     fn simulate_swap_mut(
@@ -354,6 +342,9 @@ impl Ve33Pool {
 
         pool.populate_data(None, provider.clone()).await?;
 
+        println!("pool: {:?}", pool);
+        tracing::info!("pool: {:?}", pool);
+
         if !pool.data_is_populated() {
             return Err(AMMError::PoolDataError);
         }
@@ -437,8 +428,6 @@ impl Ve33Pool {
         N: Network,
         P: Provider<T, N>,
     {
-        tracing::trace!("getting reserves of {}", self.address);
-
         // Initialize a new instance of the Pool
         let pool = IAerodromePool::new(self.address, provider);
 
@@ -642,6 +631,7 @@ impl Ve33Pool {
         }) / U256::from(10).pow(U256::from(18)))
     }
 
+    // k(x, y) = "x*y / (x^2 + y^2)". Stable swap invariant
     fn _k(&self, x: U256, y: U256) -> Result<U256, AMMError> {
         if self.stable {
             let x = (x * U256::from(10).pow(U256::from(18)))
@@ -659,6 +649,7 @@ impl Ve33Pool {
         }
     }
 
+    // f(x0, y) = "x*y / (x^2 + y^2)" without decimal scaling
     fn _f(&self, x0: U256, y: U256) -> U256 {
         let a = (x0 * y) / U256::from(10).pow(U256::from(18));
         let b = ((x0 * x0) / U256::from(10).pow(U256::from(18))
@@ -667,6 +658,7 @@ impl Ve33Pool {
         (a * b) / U256::from(10).pow(U256::from(18))
     }
 
+    // derivative of f(x, y) with respect to y. d/dy(xy/(x^2+y^2)) = 3x*y^2 + x^3
     fn _d(&self, x0: U256, y: U256) -> U256 {
         let term1 = (U256::from(3) * x0 * ((y * y) / U256::from(10).pow(U256::from(18))))
             / U256::from(10).pow(U256::from(18));
@@ -676,6 +668,11 @@ impl Ve33Pool {
         term1 + term2
     }
 
+    // Solve for y in the equation f(x, y) = k with newton's method
+    // Key points on newton's method:
+    // - start with an initial guess for y. y_0
+    // - get the tangent line to f(x, y) at y_0. This line will intersect the x-axis at some point x_1
+    // - repeat the process with the formula x_n+1 = x_n - f(x_n, y_n) / (d/dy[f(x_n, y_n)])
     fn _get_y(&self, x0: U256, xy: U256, y: U256) -> Result<U256, AMMError> {
         let mut y = y;
 
@@ -820,4 +817,46 @@ pub fn q64_to_f64(x: u128) -> f64 {
         .to_f64()
 }
 
-// TODO: Rewrite tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use provider::get_anvil_signer_provider;
+    use std::str::FromStr;
+
+    #[tokio::test]
+    async fn test_stable_swap_calculations() -> Result<(), AMMError> {
+        // Setup
+        let provider = get_anvil_signer_provider().await;
+        let pool_address = Address::from_str("0x6d0b9C9E92a3De30081563c3657B5258b3fFa38B").unwrap();
+
+        let pool = Ve33Pool::new_from_address(pool_address, 10, Arc::new(provider.clone())).await?;
+
+        let amount_in_1 = U256::from(1000000000);
+
+        let amount_out_0 = pool
+            .simulate_swap(pool.token_b, amount_in_1, pool.token_a)
+            .unwrap();
+
+        let amount_out_1 = pool
+            .simulate_swap(pool.token_a, amount_out_0, pool.token_b)
+            .unwrap();
+
+        assert!(
+            amount_out_0 > U256::ZERO,
+            "Amount out 0 should be greater than 0"
+        );
+
+        assert!(
+            amount_out_1 > U256::ZERO,
+            "Amount out 1 should be greater than 0"
+        );
+
+        // USDC/USDz pool roundtrip swap should be close to 1:1
+        assert!(
+            amount_out_1 * U256::from(1000) / amount_in_1 > U256::from(990),
+            "Amount out 1 / amount in 1 outside expected range for stableswap"
+        );
+
+        Ok(())
+    }
+}

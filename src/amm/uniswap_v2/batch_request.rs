@@ -1,7 +1,7 @@
 use alloy::{
     dyn_abi::{DynSolType, DynSolValue},
     network::Network,
-    primitives::{address, Address, U256},
+    primitives::{Address, U256},
     providers::Provider,
     sol,
     transports::Transport,

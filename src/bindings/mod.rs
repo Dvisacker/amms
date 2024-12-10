@@ -23,6 +23,7 @@ pub mod iuniswapv2pair;
 pub mod getuniswapv3pooldatabatchrequest;
 pub mod getuniswapv3tickdatabatchrequest;
 pub mod iuniswapv3poolstate;
+pub mod getve33pooldata;
 pub mod getve33pooldatabatchrequest;
 pub mod getve33poolsbatchrequest;
 pub mod getwethvalueinpoolbatchrequest;
