@@ -25,6 +25,8 @@ use tracing::instrument;
 use types::chain_serde;
 use types::exchange::{ExchangeName, ExchangeType};
 
+use super::AMM;
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Ve33Pool {
     pub address: Address,
@@ -572,7 +574,7 @@ impl Ve33Pool {
             self.get_amount_out_stable(amount_in_with_fee, token_in, reserve_in, reserve_out)
                 .unwrap_or_else(|_| U256::ZERO)
         } else {
-            self.get_amount_out_volatile(amount_in_with_fee, reserve_in, reserve_out)
+            self.get_amount_out_volatile(amount_in_with_fee, token_in, reserve_in, reserve_out)
                 .unwrap_or_else(|_| U256::ZERO)
         }
     }
@@ -580,9 +582,16 @@ impl Ve33Pool {
     fn get_amount_out_volatile(
         &self,
         amount_in: U256,
-        reserve_in: U256,
-        reserve_out: U256,
+        token_in: Address,
+        reserve0: U256,
+        reserve1: U256,
     ) -> Result<U256, AMMError> {
+        let (reserve_in, reserve_out) = if token_in == self.token_a {
+            (reserve0, reserve1)
+        } else {
+            (reserve1, reserve0)
+        };
+
         let numerator = amount_in * reserve_out;
         let denominator = reserve_in + amount_in;
         Ok(numerator / denominator)
@@ -691,6 +700,10 @@ impl Ve33Pool {
                     y += dy;
                 }
             } else {
+                if self._d(x0, y).is_zero() {
+                    return Err(AMMError::FailedToConvergeToY);
+                }
+
                 let dy = ((k - xy) * U256::from(10).pow(U256::from(18))) / self._d(x0, y);
 
                 if dy.is_zero() {
@@ -854,6 +867,31 @@ mod tests {
             "Amount out 1 / amount in 1 outside expected range for stableswap"
         );
 
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_volatile_swap_calculations() -> Result<(), AMMError> {
+        // Setup
+        let provider = get_anvil_signer_provider().await;
+        // WETH/fBOMB pool
+        let pool_address = Address::from_str("0x4f9dc2229f2357b27c22db56cb39582c854ad6d5").unwrap();
+
+        let pool =
+            Ve33Pool::new_from_address(pool_address, 300, Arc::new(provider.clone())).await?;
+
+        let amount_in_0 = U256::from(1000000000); // WETH amount
+        let amount_out_1 = pool
+            .simulate_swap(pool.token_a, amount_in_0, pool.token_b)
+            .unwrap();
+        let amount_out_0 = pool
+            .simulate_swap(pool.token_b, amount_out_1, pool.token_a)
+            .unwrap();
+
+        assert!(
+            amount_out_0 * U256::from(1000) / amount_in_0 > U256::from(990),
+            "Amount out 1 / amount in 1 outside expected range for stableswap"
+        );
         Ok(())
     }
 }

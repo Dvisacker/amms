@@ -138,8 +138,6 @@ where
         target_addresses.push(amm.address());
     }
 
-    println!("All target addresses: {:?}", target_addresses);
-
     let deployer = GetUniswapV2PoolDataBatchRequest::deploy_builder(provider, target_addresses);
     let res = deployer.call().await?;
 
@@ -300,8 +298,6 @@ mod tests {
         get_amm_data_batch_request(&mut amms, provider)
             .await
             .expect("Batch request failed");
-
-        println!("{:?}", amms);
 
         // Verify the results
         if let AMM::UniswapV2Pool(updated_pool) = &amms[0] {
