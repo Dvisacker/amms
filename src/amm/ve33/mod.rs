@@ -890,7 +890,7 @@ mod tests {
 
         assert!(
             amount_out_0 * U256::from(1000) / amount_in_0 > U256::from(990),
-            "Amount out 1 / amount in 1 outside expected range for stableswap"
+            "Amount out 1 / amount in 1 outside expected range for volatile swap"
         );
         Ok(())
     }
