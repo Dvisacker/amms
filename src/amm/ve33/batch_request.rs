@@ -86,7 +86,14 @@ pub fn populate_ve33_pool_data(
     pool.factory = tokens[8]
         .as_address()
         .ok_or(AMMError::BatchRequestError(pool.address))?;
+
     pool.stable = tokens[9].as_bool().unwrap_or(false);
+
+    if pool.stable {
+        pool.fee = 5; // 0.05%
+    } else {
+        pool.fee = 30; // 0.3%
+    }
 
     Ok(())
 }

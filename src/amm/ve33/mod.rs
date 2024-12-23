@@ -115,7 +115,7 @@ impl AutomatedMarketMaker for Ve33Pool {
         P: Provider<T, N>,
     {
         let (reserve_0, reserve_1) = self.get_reserves(provider.clone()).await?;
-        tracing::info!(?reserve_0, ?reserve_1, address = ?self.address, "UniswapV2 sync");
+        tracing::info!(?reserve_0, ?reserve_1, address = ?self.address, "Ve33 sync");
 
         self.reserve_0 = reserve_0;
         self.reserve_1 = reserve_1;
