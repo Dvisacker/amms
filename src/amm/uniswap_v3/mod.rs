@@ -313,19 +313,13 @@ impl AutomatedMarketMaker for UniswapV3Pool {
                     zero_for_one,
                 )?;
 
-            println!("tick_next: {}", step.tick_next);
-
             // ensure that we do not overshoot the min/max tick, as the tick bitmap is not aware of these bounds
             // Note: this could be removed as we are clamping in the batch contract
             step.tick_next = step.tick_next.clamp(MIN_TICK, MAX_TICK);
 
-            println!("clamped tick_next: {}", step.tick_next);
-
             // Get the next sqrt price from the input amount
             step.sqrt_price_next_x96 =
                 uniswap_v3_math::tick_math::get_sqrt_ratio_at_tick(step.tick_next)?;
-
-            println!("sqrt_price_next_x96: {}", step.sqrt_price_next_x96);
 
             // Target spot price
             let swap_target_sqrt_ratio = if zero_for_one {
@@ -339,8 +333,6 @@ impl AutomatedMarketMaker for UniswapV3Pool {
             } else {
                 step.sqrt_price_next_x96
             };
-
-            println!("swap_target_sqrt_ratio: {}", swap_target_sqrt_ratio);
 
             // Compute swap step and update the current state
             (
@@ -1563,8 +1555,6 @@ mod test {
 
         pool.populate_ticks_from_tick_data(tick_data);
 
-        println!("current tick: {}", pool.tick);
-        println!("tick_data: {:?}", pool.ticks);
         let synced_block = pool
             .populate_tick_data(creation_block, provider.clone())
             .await?;

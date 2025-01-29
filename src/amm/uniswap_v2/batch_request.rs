@@ -3,7 +3,6 @@ use alloy::{
     network::Network,
     primitives::{Address, U256},
     providers::Provider,
-    sol,
     transports::Transport,
 };
 use std::sync::Arc;
@@ -261,11 +260,10 @@ mod tests {
     use crate::amm::ExchangeType;
     use alloy_chains::{Chain, NamedChain};
     use provider::get_basic_provider;
-    use std::{env, str::FromStr};
+    use std::str::FromStr;
     use types::exchange::ExchangeName;
 
     const VE33_POOL_ADDRESS: &str = "0x8ff6c0958199a79ac0a619a88ceb6c0c96f16f89";
-    const AEROUSDC_ADDRESS: &str = "0x6cdcb1c4a4d1c3c6d054b27ac5b77e89eafb971d";
 
     #[tokio::test]
     async fn test_get_amm_data_batch_request() {
@@ -275,7 +273,7 @@ mod tests {
 
         // Create a test pool
         let pool_address = Address::from_str(VE33_POOL_ADDRESS).expect("Invalid address");
-        let mut test_pool = UniswapV2Pool {
+        let test_pool = UniswapV2Pool {
             address: pool_address,
             token_a: Address::ZERO,
             token_a_symbol: String::new(),

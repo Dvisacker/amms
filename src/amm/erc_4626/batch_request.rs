@@ -2,8 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     amm::AutomatedMarketMaker,
-    bindings::{self, geterc4626vaultdatabatchrequest::GetERC4626VaultDataBatchRequest},
-    errors::AMMError,
+    bindings::geterc4626vaultdatabatchrequest::GetERC4626VaultDataBatchRequest, errors::AMMError,
 };
 
 use alloy::{
@@ -11,7 +10,6 @@ use alloy::{
     network::Network,
     primitives::U256,
     providers::Provider,
-    sol,
     transports::Transport,
 };
 

@@ -11,7 +11,6 @@ use alloy::{
     primitives::{Address, Bytes, B256, U256},
     providers::Provider,
     rpc::types::eth::Log,
-    sol,
     sol_types::{SolCall, SolEvent},
     transports::Transport,
 };
@@ -24,8 +23,6 @@ use std::sync::Arc;
 use tracing::instrument;
 use types::chain_serde;
 use types::exchange::{ExchangeName, ExchangeType};
-
-use super::AMM;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Ve33Pool {
@@ -646,8 +643,8 @@ impl Ve33Pool {
                 / U256::from(10).pow(U256::from(self.token_b_decimals));
 
             let a = (x * y) / U256::from(10).pow(U256::from(18));
-            let b = ((x * x) / U256::from(10).pow(U256::from(18))
-                + (y * y) / U256::from(10).pow(U256::from(18)));
+            let b = (x * x) / U256::from(10).pow(U256::from(18))
+                + (y * y) / U256::from(10).pow(U256::from(18));
 
             Ok((a * b) / U256::from(10).pow(U256::from(18))) // x3y+y3x >= k
         } else {
@@ -658,8 +655,8 @@ impl Ve33Pool {
     // f(x0, y) = "x*y / (x^2 + y^2)" without decimal scaling
     fn _f(&self, x0: U256, y: U256) -> U256 {
         let a = (x0 * y) / U256::from(10).pow(U256::from(18));
-        let b = ((x0 * x0) / U256::from(10).pow(U256::from(18))
-            + (y * y) / U256::from(10).pow(U256::from(18)));
+        let b = (x0 * x0) / U256::from(10).pow(U256::from(18))
+            + (y * y) / U256::from(10).pow(U256::from(18));
 
         (a * b) / U256::from(10).pow(U256::from(18))
     }

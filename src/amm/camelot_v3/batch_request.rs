@@ -5,7 +5,6 @@ use alloy::{
     network::Network,
     primitives::aliases::I24,
     providers::Provider,
-    sol,
     transports::Transport,
 };
 use tracing::instrument;
@@ -13,7 +12,7 @@ use tracing::instrument;
 use crate::{
     amm::{AutomatedMarketMaker, AMM},
     bindings::{
-        self, getcamelotv3pooldatabatchrequest::GetCamelotV3PoolDataBatchRequest,
+        getcamelotv3pooldatabatchrequest::GetCamelotV3PoolDataBatchRequest,
         getcamelotv3tickdatabatchrequest::GetCamelotV3TickDataBatchRequest,
         synccamelotv3poolbatchrequest::SyncCamelotV3PoolBatchRequest,
     },
