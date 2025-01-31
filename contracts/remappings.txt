@@ -1,4 +1,4 @@
 forge-std/=lib/forge-std/src/
 @uniswap/v3-core/=lib/v3-core/
 @aperture/=lib/uni-v3-lib/src/
-solady/=lib/solady/src/
+solady/=lib/solady/

@@ -30,22 +30,22 @@ pub mod FullMath {
     /// The creation / init bytecode of the contract.
     ///
     /// ```text
-    ///0x6055604b600b8282823980515f1a607314603f577f4e487b71000000000000000000000000000000000000000000000000000000005f525f60045260245ffd5b305f52607381538281f3fe730000000000000000000000000000000000000000301460806040525f80fdfea2646970667358221220fec3b294d09cf80b8dafb59a7da908da508d5fc124ee5ae37952a207f589d9ad64736f6c634300081a0033
+    ///0x6055604b600b8282823980515f1a607314603f577f4e487b71000000000000000000000000000000000000000000000000000000005f525f60045260245ffd5b305f52607381538281f3fe730000000000000000000000000000000000000000301460806040525f80fdfea264697066735822122043683d1de672a966cb536c2a769d49c097322539438b0690f43f540adf09fd5e64736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`U`K`\x0B\x82\x82\x829\x80Q_\x1A`s\x14`?W\x7FNH{q\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0_R_`\x04R`$_\xFD[0_R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xFE\xC3\xB2\x94\xD0\x9C\xF8\x0B\x8D\xAF\xB5\x9A}\xA9\x08\xDAP\x8D_\xC1$\xEEZ\xE3yR\xA2\x07\xF5\x89\xD9\xADdsolcC\0\x08\x1A\x003",
+        b"`U`K`\x0B\x82\x82\x829\x80Q_\x1A`s\x14`?W\x7FNH{q\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0_R_`\x04R`$_\xFD[0_R`s\x81S\x82\x81\xF3\xFEs\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 Ch=\x1D\xE6r\xA9f\xCBSl*v\x9DI\xC0\x972%9C\x8B\x06\x90\xF4?T\n\xDF\t\xFD^dsolcC\0\x08\x1A\x003",
     );
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x730000000000000000000000000000000000000000301460806040525f80fdfea2646970667358221220fec3b294d09cf80b8dafb59a7da908da508d5fc124ee5ae37952a207f589d9ad64736f6c634300081a0033
+    ///0x730000000000000000000000000000000000000000301460806040525f80fdfea264697066735822122043683d1de672a966cb536c2a769d49c097322539438b0690f43f540adf09fd5e64736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xFE\xC3\xB2\x94\xD0\x9C\xF8\x0B\x8D\xAF\xB5\x9A}\xA9\x08\xDAP\x8D_\xC1$\xEEZ\xE3yR\xA2\x07\xF5\x89\xD9\xADdsolcC\0\x08\x1A\x003",
+        b"s\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\x000\x14`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 Ch=\x1D\xE6r\xA9f\xCBSl*v\x9DI\xC0\x972%9C\x8B\x06\x90\xF4?T\n\xDF\t\xFD^dsolcC\0\x08\x1A\x003",
     );
     /**Custom error with signature `FullMulDivFailed()` and selector `0xae47f702`.
 ```solidity
