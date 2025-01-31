@@ -4,6 +4,9 @@ evm_version = "cancun"
 
 remappings = [
    "forge-std=lib/forge-std/src/",
+   "@uniswap/v3-core/=lib/v3-core/",
+   "@aperture/=lib/uni-v3-lib/src/",
+   "solady/=lib/solady/src/"
 ]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

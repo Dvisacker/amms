@@ -86,7 +86,13 @@ interface ICamelotV3PoolState {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod ICamelotV3PoolState {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -114,18 +120,25 @@ pub mod ICamelotV3PoolState {
 ```solidity
 function tickTable(int16 wordPosition) external view returns (uint256);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct tickTableCall {
+        #[allow(missing_docs)]
         pub wordPosition: i16,
     }
     ///Container type for the return parameters of the [`tickTable(int16)`](tickTableCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct tickTableReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::U256,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -235,25 +248,39 @@ function tickTable(int16 wordPosition) external view returns (uint256);
 ```solidity
 function ticks(int24 tick) external view returns (uint128 liquidityGross, int128 liquidityNet, uint256 feeGrowthOutside0X128, uint256 feeGrowthOutside1X128, int56 tickCumulativeOutside, uint160 secondsPerLiquidityOutsideX128, uint32 secondsOutside, bool initialized);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct ticksCall {
+        #[allow(missing_docs)]
         pub tick: alloy::sol_types::private::primitives::aliases::I24,
     }
     ///Container type for the return parameters of the [`ticks(int24)`](ticksCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct ticksReturn {
+        #[allow(missing_docs)]
         pub liquidityGross: u128,
+        #[allow(missing_docs)]
         pub liquidityNet: i128,
+        #[allow(missing_docs)]
         pub feeGrowthOutside0X128: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub feeGrowthOutside1X128: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub tickCumulativeOutside: alloy::sol_types::private::primitives::aliases::I56,
+        #[allow(missing_docs)]
         pub secondsPerLiquidityOutsideX128: alloy::sol_types::private::primitives::aliases::U160,
+        #[allow(missing_docs)]
         pub secondsOutside: u32,
+        #[allow(missing_docs)]
         pub initialized: bool,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -406,7 +433,9 @@ function ticks(int24 tick) external view returns (uint128 liquidityGross, int128
     };
     ///Container for all the [`ICamelotV3PoolState`](self) function calls.
     pub enum ICamelotV3PoolStateCalls {
+        #[allow(missing_docs)]
         tickTable(tickTableCall),
+        #[allow(missing_docs)]
         ticks(ticksCall),
     }
     #[automatically_derived]
@@ -445,7 +474,7 @@ function ticks(int24 tick) external view returns (uint128 liquidityGross, int128
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -490,7 +519,7 @@ function ticks(int24 tick) external view returns (uint128 liquidityGross, int128
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

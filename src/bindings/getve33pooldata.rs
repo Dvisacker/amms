@@ -23,7 +23,13 @@ interface GetVe33PoolData {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod GetVe33PoolData {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -40,20 +46,21 @@ pub mod GetVe33PoolData {
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x60806040525f80fdfea26469706673582212200dea73d60a16e66b9a30fa0a2d8f7ba4dcc1aa385cb43089df9df2b84a4b08a964736f6c634300081a0033
+    ///0x60806040525f80fdfea2646970667358221220da7413009b3d635ca2e360f150687fcef8b1fd2bb7fef15589c7a8bd44db13c264736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \r\xEAs\xD6\n\x16\xE6k\x9A0\xFA\n-\x8F{\xA4\xDC\xC1\xAA8\\\xB40\x89\xDF\x9D\xF2\xB8JK\x08\xA9dsolcC\0\x08\x1A\x003",
+        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xDAt\x13\0\x9B=c\\\xA2\xE3`\xF1Ph\x7F\xCE\xF8\xB1\xFD+\xB7\xFE\xF1U\x89\xC7\xA8\xBDD\xDB\x13\xC2dsolcC\0\x08\x1A\x003",
     );
     /**Constructor`.
 ```solidity
 constructor(address[] pools);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct constructorCall {
+        #[allow(missing_docs)]
         pub pools: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
     }
     const _: () = {

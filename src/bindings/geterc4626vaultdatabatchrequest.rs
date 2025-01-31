@@ -23,7 +23,13 @@ interface GetERC4626VaultDataBatchRequest {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod GetERC4626VaultDataBatchRequest {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -40,20 +46,21 @@ pub mod GetERC4626VaultDataBatchRequest {
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x60806040525f80fdfea2646970667358221220b89620388478ca9b26baf63309948de3c6eb0ad2f9547df262a59f2b096470c264736f6c634300081a0033
+    ///0x60806040525f80fdfea26469706673582212205a0632d79aa5d01b8b1e60a4fbb867aded372a620f1353977fc21885a2002d8764736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xB8\x96 8\x84x\xCA\x9B&\xBA\xF63\t\x94\x8D\xE3\xC6\xEB\n\xD2\xF9T}\xF2b\xA5\x9F+\tdp\xC2dsolcC\0\x08\x1A\x003",
+        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 Z\x062\xD7\x9A\xA5\xD0\x1B\x8B\x1E`\xA4\xFB\xB8g\xAD\xED7*b\x0F\x13S\x97\x7F\xC2\x18\x85\xA2\0-\x87dsolcC\0\x08\x1A\x003",
     );
     /**Constructor`.
 ```solidity
 constructor(address[] vaults);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct constructorCall {
+        #[allow(missing_docs)]
         pub vaults: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
     }
     const _: () = {

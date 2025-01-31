@@ -8,7 +8,7 @@ import "./IAerodromeCLPool.sol";
 /* 
 Original contract by Aperture Finance
 */
-contract GetCLPoolTicksInRangeRequest is PoolUtils {
+contract GetCLPoolTicksInRange is PoolUtils {
     constructor(DEX dex, V3PoolCallee pool, int24 tickLower, int24 tickUpper) payable {
         PopulatedTick[] memory populatedTicks = getPopulatedTicksInRange(dex, pool, tickLower, tickUpper);
         bytes memory returnData = abi.encode(populatedTicks);
@@ -90,7 +90,7 @@ contract GetCLPoolTicksInRangeRequest is PoolUtils {
                 ,
                 ,
 
-            ) = ISlipStreamCLPool(V3PoolCallee.unwrap(pool)).ticks(tick);
+            ) = IAerodromeCLPool(V3PoolCallee.unwrap(pool)).ticks(tick);
         } else {
             PoolCaller.TickInfo memory info = pool.ticks(tick);
             populatedTick.liquidityNet = info.liquidityNet;

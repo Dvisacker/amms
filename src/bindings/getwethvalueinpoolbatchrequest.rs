@@ -64,7 +64,13 @@ interface GetWethValueInPoolBatchRequest {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod GetWethValueInPoolBatchRequest {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -81,24 +87,29 @@ pub mod GetWethValueInPoolBatchRequest {
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x608060405234801561000f575f80fd5b5060043610610029575f3560e01c80630ed45c8e1461002d575b5f80fd5b610047600480360381019061004291906100e6565b61005d565b604051610054919061013b565b60405180910390f35b5f602052805f5260405f205f915054906101000a90046fffffffffffffffffffffffffffffffff1681565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6100b58261008c565b9050919050565b6100c5816100ab565b81146100cf575f80fd5b50565b5f813590506100e0816100bc565b92915050565b5f602082840312156100fb576100fa610088565b5b5f610108848285016100d2565b91505092915050565b5f6fffffffffffffffffffffffffffffffff82169050919050565b61013581610111565b82525050565b5f60208201905061014e5f83018461012c565b9291505056fea2646970667358221220434f3371ecf13c2a47f43dd1082b2a7751eddc417eb8c775660da918c3856da664736f6c634300081a0033
+    ///0x608060405234801561000f575f80fd5b5060043610610029575f3560e01c80630ed45c8e1461002d575b5f80fd5b610047600480360381019061004291906100e6565b61005d565b604051610054919061013b565b60405180910390f35b5f602052805f5260405f205f915054906101000a90046fffffffffffffffffffffffffffffffff1681565b5f80fd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6100b58261008c565b9050919050565b6100c5816100ab565b81146100cf575f80fd5b50565b5f813590506100e0816100bc565b92915050565b5f602082840312156100fb576100fa610088565b5b5f610108848285016100d2565b91505092915050565b5f6fffffffffffffffffffffffffffffffff82169050919050565b61013581610111565b82525050565b5f60208201905061014e5f83018461012c565b9291505056fea2646970667358221220ff2c434f6cbb91e459be626f50b81de7d1c2935448a94bd4da35f50c6e5f35fd64736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R4\x80\x15a\0\x0FW_\x80\xFD[P`\x046\x10a\0)W_5`\xE0\x1C\x80c\x0E\xD4\\\x8E\x14a\0-W[_\x80\xFD[a\0G`\x04\x806\x03\x81\x01\x90a\0B\x91\x90a\0\xE6V[a\0]V[`@Qa\0T\x91\x90a\x01;V[`@Q\x80\x91\x03\x90\xF3[_` R\x80_R`@_ _\x91PT\x90a\x01\0\n\x90\x04o\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x16\x81V[_\x80\xFD[_s\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x82\x16\x90P\x91\x90PV[_a\0\xB5\x82a\0\x8CV[\x90P\x91\x90PV[a\0\xC5\x81a\0\xABV[\x81\x14a\0\xCFW_\x80\xFD[PV[_\x815\x90Pa\0\xE0\x81a\0\xBCV[\x92\x91PPV[_` \x82\x84\x03\x12\x15a\0\xFBWa\0\xFAa\0\x88V[[_a\x01\x08\x84\x82\x85\x01a\0\xD2V[\x91PP\x92\x91PPV[_o\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x82\x16\x90P\x91\x90PV[a\x015\x81a\x01\x11V[\x82RPPV[_` \x82\x01\x90Pa\x01N_\x83\x01\x84a\x01,V[\x92\x91PPV\xFE\xA2dipfsX\"\x12 CO3q\xEC\xF1<*G\xF4=\xD1\x08+*wQ\xED\xDCA~\xB8\xC7uf\r\xA9\x18\xC3\x85m\xA6dsolcC\0\x08\x1A\x003",
+        b"`\x80`@R4\x80\x15a\0\x0FW_\x80\xFD[P`\x046\x10a\0)W_5`\xE0\x1C\x80c\x0E\xD4\\\x8E\x14a\0-W[_\x80\xFD[a\0G`\x04\x806\x03\x81\x01\x90a\0B\x91\x90a\0\xE6V[a\0]V[`@Qa\0T\x91\x90a\x01;V[`@Q\x80\x91\x03\x90\xF3[_` R\x80_R`@_ _\x91PT\x90a\x01\0\n\x90\x04o\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x16\x81V[_\x80\xFD[_s\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x82\x16\x90P\x91\x90PV[_a\0\xB5\x82a\0\x8CV[\x90P\x91\x90PV[a\0\xC5\x81a\0\xABV[\x81\x14a\0\xCFW_\x80\xFD[PV[_\x815\x90Pa\0\xE0\x81a\0\xBCV[\x92\x91PPV[_` \x82\x84\x03\x12\x15a\0\xFBWa\0\xFAa\0\x88V[[_a\x01\x08\x84\x82\x85\x01a\0\xD2V[\x91PP\x92\x91PPV[_o\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x82\x16\x90P\x91\x90PV[a\x015\x81a\x01\x11V[\x82RPPV[_` \x82\x01\x90Pa\x01N_\x83\x01\x84a\x01,V[\x92\x91PPV\xFE\xA2dipfsX\"\x12 \xFF,COl\xBB\x91\xE4Y\xBEboP\xB8\x1D\xE7\xD1\xC2\x93TH\xA9K\xD4\xDA5\xF5\x0Cn_5\xFDdsolcC\0\x08\x1A\x003",
     );
     /**Constructor`.
 ```solidity
 constructor(address[] pools, address[] dexes, bool[] dexIsUniV3, address weth, uint256 wethInPoolThreshold);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct constructorCall {
+        #[allow(missing_docs)]
         pub pools: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
+        #[allow(missing_docs)]
         pub dexes: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
+        #[allow(missing_docs)]
         pub dexIsUniV3: alloy::sol_types::private::Vec<bool>,
+        #[allow(missing_docs)]
         pub weth: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub wethInPoolThreshold: alloy::sol_types::private::primitives::aliases::U256,
     }
     const _: () = {
@@ -202,18 +213,25 @@ constructor(address[] pools, address[] dexes, bool[] dexIsUniV3, address weth, u
 ```solidity
 function tokenToWethPrices(address) external view returns (uint128);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct tokenToWethPricesCall {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
     ///Container type for the return parameters of the [`tokenToWethPrices(address)`](tokenToWethPricesCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct tokenToWethPricesReturn {
+        #[allow(missing_docs)]
         pub _0: u128,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -323,6 +341,7 @@ function tokenToWethPrices(address) external view returns (uint128);
     };
     ///Container for all the [`GetWethValueInPoolBatchRequest`](self) function calls.
     pub enum GetWethValueInPoolBatchRequestCalls {
+        #[allow(missing_docs)]
         tokenToWethPrices(tokenToWethPricesCall),
     }
     #[automatically_derived]
@@ -357,7 +376,7 @@ function tokenToWethPrices(address) external view returns (uint128);
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -389,7 +408,7 @@ function tokenToWethPrices(address) external view returns (uint128);
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

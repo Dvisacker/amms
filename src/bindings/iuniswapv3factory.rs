@@ -41,7 +41,13 @@ interface IUniswapV3Factory {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod IUniswapV3Factory {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -69,20 +75,29 @@ pub mod IUniswapV3Factory {
 ```solidity
 function getPool(address tokenA, address tokenB, uint24 fee) external view returns (address pool);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getPoolCall {
+        #[allow(missing_docs)]
         pub tokenA: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub tokenB: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub fee: alloy::sol_types::private::primitives::aliases::U24,
     }
     ///Container type for the return parameters of the [`getPool(address,address,uint24)`](getPoolCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getPoolReturn {
+        #[allow(missing_docs)]
         pub pool: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -210,6 +225,7 @@ function getPool(address tokenA, address tokenB, uint24 fee) external view retur
     };
     ///Container for all the [`IUniswapV3Factory`](self) function calls.
     pub enum IUniswapV3FactoryCalls {
+        #[allow(missing_docs)]
         getPool(getPoolCall),
     }
     #[automatically_derived]
@@ -242,7 +258,7 @@ function getPool(address tokenA, address tokenB, uint24 fee) external view retur
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -274,7 +290,7 @@ function getPool(address tokenA, address tokenB, uint24 fee) external view retur
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

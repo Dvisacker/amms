@@ -36,7 +36,13 @@ interface IUniswapV2Factory {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod IUniswapV2Factory {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -64,19 +70,27 @@ pub mod IUniswapV2Factory {
 ```solidity
 function getPair(address tokenA, address tokenB) external view returns (address pair);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getPairCall {
+        #[allow(missing_docs)]
         pub tokenA: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub tokenB: alloy::sol_types::private::Address,
     }
     ///Container type for the return parameters of the [`getPair(address,address)`](getPairCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getPairReturn {
+        #[allow(missing_docs)]
         pub pair: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -197,6 +211,7 @@ function getPair(address tokenA, address tokenB) external view returns (address 
     };
     ///Container for all the [`IUniswapV2Factory`](self) function calls.
     pub enum IUniswapV2FactoryCalls {
+        #[allow(missing_docs)]
         getPair(getPairCall),
     }
     #[automatically_derived]
@@ -229,7 +244,7 @@ function getPair(address tokenA, address tokenB) external view returns (address 
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -261,7 +276,7 @@ function getPair(address tokenA, address tokenB) external view returns (address 
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

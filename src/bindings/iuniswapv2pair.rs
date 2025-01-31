@@ -63,7 +63,13 @@ interface IUniswapV2Pair {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod IUniswapV2Pair {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -91,18 +97,26 @@ pub mod IUniswapV2Pair {
 ```solidity
 function getReserves() external view returns (uint256 reserve0, uint256 reserve1, uint32 blockTimestampLast);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getReservesCall {}
     ///Container type for the return parameters of the [`getReserves()`](getReservesCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct getReservesReturn {
+        #[allow(missing_docs)]
         pub reserve0: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub reserve1: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub blockTimestampLast: u32,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -222,16 +236,22 @@ function getReserves() external view returns (uint256 reserve0, uint256 reserve1
 ```solidity
 function token0() external view returns (address);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct token0Call {}
     ///Container type for the return parameters of the [`token0()`](token0Call) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct token0Return {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -335,16 +355,22 @@ function token0() external view returns (address);
 ```solidity
 function token1() external view returns (address);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct token1Call {}
     ///Container type for the return parameters of the [`token1()`](token1Call) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct token1Return {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -446,8 +472,11 @@ function token1() external view returns (address);
     };
     ///Container for all the [`IUniswapV2Pair`](self) function calls.
     pub enum IUniswapV2PairCalls {
+        #[allow(missing_docs)]
         getReserves(getReservesCall),
+        #[allow(missing_docs)]
         token0(token0Call),
+        #[allow(missing_docs)]
         token1(token1Call),
     }
     #[automatically_derived]
@@ -488,7 +517,7 @@ function token1() external view returns (address);
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -546,7 +575,7 @@ function token1() external view returns (address);
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

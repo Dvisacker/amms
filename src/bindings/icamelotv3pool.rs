@@ -384,7 +384,13 @@ interface ICamelotV3Pool {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod ICamelotV3Pool {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -412,16 +418,22 @@ pub mod ICamelotV3Pool {
 ```solidity
 function activeIncentive() external view returns (address virtualPool);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct activeIncentiveCall {}
     ///Container type for the return parameters of the [`activeIncentive()`](activeIncentiveCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct activeIncentiveReturn {
+        #[allow(missing_docs)]
         pub virtualPool: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -527,16 +539,22 @@ function activeIncentive() external view returns (address virtualPool);
 ```solidity
 function dataStorageOperator() external view returns (address);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct dataStorageOperatorCall {}
     ///Container type for the return parameters of the [`dataStorageOperator()`](dataStorageOperatorCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct dataStorageOperatorReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -644,16 +662,22 @@ function dataStorageOperator() external view returns (address);
 ```solidity
 function factory() external view returns (address);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct factoryCall {}
     ///Container type for the return parameters of the [`factory()`](factoryCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct factoryReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -757,23 +781,36 @@ function factory() external view returns (address);
 ```solidity
 function globalState() external view returns (uint160 price, int24 tick, uint16 feeZto, uint16 feeOtz, uint16 timepointIndex, uint8 communityFeeToken0, uint8 communityFeeToken1, bool unlocked);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct globalStateCall {}
     ///Container type for the return parameters of the [`globalState()`](globalStateCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct globalStateReturn {
+        #[allow(missing_docs)]
         pub price: alloy::sol_types::private::primitives::aliases::U160,
+        #[allow(missing_docs)]
         pub tick: alloy::sol_types::private::primitives::aliases::I24,
+        #[allow(missing_docs)]
         pub feeZto: u16,
+        #[allow(missing_docs)]
         pub feeOtz: u16,
+        #[allow(missing_docs)]
         pub timepointIndex: u16,
+        #[allow(missing_docs)]
         pub communityFeeToken0: u8,
+        #[allow(missing_docs)]
         pub communityFeeToken1: u8,
+        #[allow(missing_docs)]
         pub unlocked: bool,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -922,16 +959,22 @@ function globalState() external view returns (uint160 price, int24 tick, uint16 
 ```solidity
 function liquidity() external view returns (uint128);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct liquidityCall {}
     ///Container type for the return parameters of the [`liquidity()`](liquidityCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct liquidityReturn {
+        #[allow(missing_docs)]
         pub _0: u128,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -1035,16 +1078,22 @@ function liquidity() external view returns (uint128);
 ```solidity
 function liquidityCooldown() external view returns (uint32 cooldownInSeconds);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct liquidityCooldownCall {}
     ///Container type for the return parameters of the [`liquidityCooldown()`](liquidityCooldownCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct liquidityCooldownReturn {
+        #[allow(missing_docs)]
         pub cooldownInSeconds: u32,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -1152,16 +1201,22 @@ function liquidityCooldown() external view returns (uint32 cooldownInSeconds);
 ```solidity
 function maxLiquidityPerTick() external view returns (uint128);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct maxLiquidityPerTickCall {}
     ///Container type for the return parameters of the [`maxLiquidityPerTick()`](maxLiquidityPerTickCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct maxLiquidityPerTickReturn {
+        #[allow(missing_docs)]
         pub _0: u128,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -1269,23 +1324,35 @@ function maxLiquidityPerTick() external view returns (uint128);
 ```solidity
 function positions(bytes32 key) external view returns (uint128 liquidityAmount, uint32 lastLiquidityAddTimestamp, uint256 innerFeeGrowth0Token, uint256 innerFeeGrowth1Token, uint128 fees0, uint128 fees1);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct positionsCall {
+        #[allow(missing_docs)]
         pub key: alloy::sol_types::private::FixedBytes<32>,
     }
     ///Container type for the return parameters of the [`positions(bytes32)`](positionsCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct positionsReturn {
+        #[allow(missing_docs)]
         pub liquidityAmount: u128,
+        #[allow(missing_docs)]
         pub lastLiquidityAddTimestamp: u32,
+        #[allow(missing_docs)]
         pub innerFeeGrowth0Token: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub innerFeeGrowth1Token: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub fees0: u128,
+        #[allow(missing_docs)]
         pub fees1: u128,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -1428,16 +1495,22 @@ function positions(bytes32 key) external view returns (uint128 liquidityAmount, 
 ```solidity
 function tickSpacing() external view returns (int24);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct tickSpacingCall {}
     ///Container type for the return parameters of the [`tickSpacing()`](tickSpacingCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct tickSpacingReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::I24,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -1543,18 +1616,25 @@ function tickSpacing() external view returns (int24);
 ```solidity
 function tickTable(int16 wordPosition) external view returns (uint256);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct tickTableCall {
+        #[allow(missing_docs)]
         pub wordPosition: i16,
     }
     ///Container type for the return parameters of the [`tickTable(int16)`](tickTableCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct tickTableReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::U256,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -1664,25 +1744,39 @@ function tickTable(int16 wordPosition) external view returns (uint256);
 ```solidity
 function ticks(int24 tick) external view returns (uint128 liquidityTotal, int128 liquidityDelta, uint256 outerFeeGrowth0Token, uint256 outerFeeGrowth1Token, int56 outerTickCumulative, uint160 outerSecondsPerLiquidity, uint32 outerSecondsSpent, bool initialized);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct ticksCall {
+        #[allow(missing_docs)]
         pub tick: alloy::sol_types::private::primitives::aliases::I24,
     }
     ///Container type for the return parameters of the [`ticks(int24)`](ticksCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct ticksReturn {
+        #[allow(missing_docs)]
         pub liquidityTotal: u128,
+        #[allow(missing_docs)]
         pub liquidityDelta: i128,
+        #[allow(missing_docs)]
         pub outerFeeGrowth0Token: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub outerFeeGrowth1Token: alloy::sol_types::private::primitives::aliases::U256,
+        #[allow(missing_docs)]
         pub outerTickCumulative: alloy::sol_types::private::primitives::aliases::I56,
+        #[allow(missing_docs)]
         pub outerSecondsPerLiquidity: alloy::sol_types::private::primitives::aliases::U160,
+        #[allow(missing_docs)]
         pub outerSecondsSpent: u32,
+        #[allow(missing_docs)]
         pub initialized: bool,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -1837,24 +1931,37 @@ function ticks(int24 tick) external view returns (uint128 liquidityTotal, int128
 ```solidity
 function timepoints(uint256 index) external view returns (bool initialized, uint32 blockTimestamp, int56 tickCumulative, uint160 secondsPerLiquidityCumulative, uint88 volatilityCumulative, int24 averageTick, uint144 volumePerLiquidityCumulative);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct timepointsCall {
+        #[allow(missing_docs)]
         pub index: alloy::sol_types::private::primitives::aliases::U256,
     }
     ///Container type for the return parameters of the [`timepoints(uint256)`](timepointsCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct timepointsReturn {
+        #[allow(missing_docs)]
         pub initialized: bool,
+        #[allow(missing_docs)]
         pub blockTimestamp: u32,
+        #[allow(missing_docs)]
         pub tickCumulative: alloy::sol_types::private::primitives::aliases::I56,
+        #[allow(missing_docs)]
         pub secondsPerLiquidityCumulative: alloy::sol_types::private::primitives::aliases::U160,
+        #[allow(missing_docs)]
         pub volatilityCumulative: alloy::sol_types::private::primitives::aliases::U88,
+        #[allow(missing_docs)]
         pub averageTick: alloy::sol_types::private::primitives::aliases::I24,
+        #[allow(missing_docs)]
         pub volumePerLiquidityCumulative: alloy::sol_types::private::primitives::aliases::U144,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -2004,16 +2111,22 @@ function timepoints(uint256 index) external view returns (bool initialized, uint
 ```solidity
 function token0() external view returns (address);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct token0Call {}
     ///Container type for the return parameters of the [`token0()`](token0Call) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct token0Return {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -2117,16 +2230,22 @@ function token0() external view returns (address);
 ```solidity
 function token1() external view returns (address);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct token1Call {}
     ///Container type for the return parameters of the [`token1()`](token1Call) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct token1Return {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -2230,16 +2349,22 @@ function token1() external view returns (address);
 ```solidity
 function totalFeeGrowth0Token() external view returns (uint256);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct totalFeeGrowth0TokenCall {}
     ///Container type for the return parameters of the [`totalFeeGrowth0Token()`](totalFeeGrowth0TokenCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct totalFeeGrowth0TokenReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::U256,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -2349,16 +2474,22 @@ function totalFeeGrowth0Token() external view returns (uint256);
 ```solidity
 function totalFeeGrowth1Token() external view returns (uint256);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct totalFeeGrowth1TokenCall {}
     ///Container type for the return parameters of the [`totalFeeGrowth1Token()`](totalFeeGrowth1TokenCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct totalFeeGrowth1TokenReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::U256,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -2466,21 +2597,37 @@ function totalFeeGrowth1Token() external view returns (uint256);
     };
     ///Container for all the [`ICamelotV3Pool`](self) function calls.
     pub enum ICamelotV3PoolCalls {
+        #[allow(missing_docs)]
         activeIncentive(activeIncentiveCall),
+        #[allow(missing_docs)]
         dataStorageOperator(dataStorageOperatorCall),
+        #[allow(missing_docs)]
         factory(factoryCall),
+        #[allow(missing_docs)]
         globalState(globalStateCall),
+        #[allow(missing_docs)]
         liquidity(liquidityCall),
+        #[allow(missing_docs)]
         liquidityCooldown(liquidityCooldownCall),
+        #[allow(missing_docs)]
         maxLiquidityPerTick(maxLiquidityPerTickCall),
+        #[allow(missing_docs)]
         positions(positionsCall),
+        #[allow(missing_docs)]
         tickSpacing(tickSpacingCall),
+        #[allow(missing_docs)]
         tickTable(tickTableCall),
+        #[allow(missing_docs)]
         ticks(ticksCall),
+        #[allow(missing_docs)]
         timepoints(timepointsCall),
+        #[allow(missing_docs)]
         token0(token0Call),
+        #[allow(missing_docs)]
         token1(token1Call),
+        #[allow(missing_docs)]
         totalFeeGrowth0Token(totalFeeGrowth0TokenCall),
+        #[allow(missing_docs)]
         totalFeeGrowth1Token(totalFeeGrowth1TokenCall),
     }
     #[automatically_derived]
@@ -2569,7 +2716,7 @@ function totalFeeGrowth1Token() external view returns (uint256);
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -2796,7 +2943,7 @@ function totalFeeGrowth1Token() external view returns (uint256);
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

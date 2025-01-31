@@ -93,7 +93,13 @@ interface ICurvePool {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod ICurvePool {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -121,16 +127,22 @@ pub mod ICurvePool {
 ```solidity
 function A() external view returns (uint256);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct ACall {}
     ///Container type for the return parameters of the [`A()`](ACall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct AReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::U256,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -236,18 +248,25 @@ function A() external view returns (uint256);
 ```solidity
 function balances(uint256 i) external view returns (uint256);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct balancesCall {
+        #[allow(missing_docs)]
         pub i: alloy::sol_types::private::primitives::aliases::U256,
     }
     ///Container type for the return parameters of the [`balances(uint256)`](balancesCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct balancesReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::U256,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -359,18 +378,25 @@ function balances(uint256 i) external view returns (uint256);
 ```solidity
 function coins(uint256 i) external view returns (address);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct coinsCall {
+        #[allow(missing_docs)]
         pub i: alloy::sol_types::private::primitives::aliases::U256,
     }
     ///Container type for the return parameters of the [`coins(uint256)`](coinsCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct coinsReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -480,16 +506,22 @@ function coins(uint256 i) external view returns (address);
 ```solidity
 function fee() external view returns (uint256);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct feeCall {}
     ///Container type for the return parameters of the [`fee()`](feeCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct feeReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::U256,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -595,16 +627,22 @@ function fee() external view returns (uint256);
 ```solidity
 function get_virtual_price() external view returns (uint256);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct get_virtual_priceCall {}
     ///Container type for the return parameters of the [`get_virtual_price()`](get_virtual_priceCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct get_virtual_priceReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::primitives::aliases::U256,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -712,10 +750,15 @@ function get_virtual_price() external view returns (uint256);
     };
     ///Container for all the [`ICurvePool`](self) function calls.
     pub enum ICurvePoolCalls {
+        #[allow(missing_docs)]
         A(ACall),
+        #[allow(missing_docs)]
         balances(balancesCall),
+        #[allow(missing_docs)]
         coins(coinsCall),
+        #[allow(missing_docs)]
         fee(feeCall),
+        #[allow(missing_docs)]
         get_virtual_price(get_virtual_priceCall),
     }
     #[automatically_derived]
@@ -760,7 +803,7 @@ function get_virtual_price() external view returns (uint256);
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -844,7 +887,7 @@ function get_virtual_price() external view returns (uint256);
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

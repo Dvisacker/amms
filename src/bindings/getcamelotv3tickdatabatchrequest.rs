@@ -43,7 +43,13 @@ interface GetCamelotV3TickDataBatchRequest {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod GetCamelotV3TickDataBatchRequest {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -60,24 +66,29 @@ pub mod GetCamelotV3TickDataBatchRequest {
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x60806040525f80fdfea2646970667358221220af072593fe89b80ab57c6a22045ef5b1e89ace8017d5f2acfde9017a842aa5ce64736f6c634300081a0033
+    ///0x60806040525f80fdfea2646970667358221220e060e2794ca306731eec4e60077cd8aba9c3fc5f1ad380d7c7233a100fa09b5564736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xAF\x07%\x93\xFE\x89\xB8\n\xB5|j\"\x04^\xF5\xB1\xE8\x9A\xCE\x80\x17\xD5\xF2\xAC\xFD\xE9\x01z\x84*\xA5\xCEdsolcC\0\x08\x1A\x003",
+        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 \xE0`\xE2yL\xA3\x06s\x1E\xECN`\x07|\xD8\xAB\xA9\xC3\xFC_\x1A\xD3\x80\xD7\xC7#:\x10\x0F\xA0\x9BUdsolcC\0\x08\x1A\x003",
     );
     /**Constructor`.
 ```solidity
 constructor(address pool, bool zeroForOne, int24 currentTick, uint16 numTicks, int24 tickSpacing);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct constructorCall {
+        #[allow(missing_docs)]
         pub pool: alloy::sol_types::private::Address,
+        #[allow(missing_docs)]
         pub zeroForOne: bool,
+        #[allow(missing_docs)]
         pub currentTick: alloy::sol_types::private::primitives::aliases::I24,
+        #[allow(missing_docs)]
         pub numTicks: u16,
+        #[allow(missing_docs)]
         pub tickSpacing: alloy::sol_types::private::primitives::aliases::I24,
     }
     const _: () = {

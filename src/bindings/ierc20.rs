@@ -25,7 +25,13 @@ interface IERC20 {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod IERC20 {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -53,16 +59,22 @@ pub mod IERC20 {
 ```solidity
 function decimals() external view returns (uint8);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct decimalsCall {}
     ///Container type for the return parameters of the [`decimals()`](decimalsCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct decimalsReturn {
+        #[allow(missing_docs)]
         pub _0: u8,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -164,6 +176,7 @@ function decimals() external view returns (uint8);
     };
     ///Container for all the [`IERC20`](self) function calls.
     pub enum IERC20Calls {
+        #[allow(missing_docs)]
         decimals(decimalsCall),
     }
     #[automatically_derived]
@@ -196,7 +209,7 @@ function decimals() external view returns (uint8);
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -228,7 +241,7 @@ function decimals() external view returns (uint8);
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

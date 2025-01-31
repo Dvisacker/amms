@@ -31,7 +31,13 @@ interface IFactory {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod IFactory {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -59,18 +65,25 @@ pub mod IFactory {
 ```solidity
 function allPairs(uint256 idx) external returns (address);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct allPairsCall {
+        #[allow(missing_docs)]
         pub idx: alloy::sol_types::private::primitives::aliases::U256,
     }
     ///Container type for the return parameters of the [`allPairs(uint256)`](allPairsCall) function.
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct allPairsReturn {
+        #[allow(missing_docs)]
         pub _0: alloy::sol_types::private::Address,
     }
-    #[allow(non_camel_case_types, non_snake_case, clippy::style)]
+    #[allow(
+        non_camel_case_types,
+        non_snake_case,
+        clippy::pub_underscore_fields,
+        clippy::style
+    )]
     const _: () = {
         use alloy::sol_types as alloy_sol_types;
         {
@@ -178,6 +191,7 @@ function allPairs(uint256 idx) external returns (address);
     };
     ///Container for all the [`IFactory`](self) function calls.
     pub enum IFactoryCalls {
+        #[allow(missing_docs)]
         allPairs(allPairsCall),
     }
     #[automatically_derived]
@@ -210,7 +224,7 @@ function allPairs(uint256 idx) external returns (address);
             Self::SELECTORS.binary_search(&selector).is_ok()
         }
         #[inline]
-        #[allow(unsafe_code, non_snake_case)]
+        #[allow(non_snake_case)]
         fn abi_decode_raw(
             selector: [u8; 4],
             data: &[u8],
@@ -242,7 +256,7 @@ function allPairs(uint256 idx) external returns (address);
                     ),
                 );
             };
-            (unsafe { DECODE_SHIMS.get_unchecked(idx) })(data, validate)
+            DECODE_SHIMS[idx](data, validate)
         }
         #[inline]
         fn abi_encoded_size(&self) -> usize {

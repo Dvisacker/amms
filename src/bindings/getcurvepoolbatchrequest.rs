@@ -23,7 +23,13 @@ interface GetCurvePoolBatchRequest {
   }
 ]
 ```*/
-#[allow(non_camel_case_types, non_snake_case, clippy::style)]
+#[allow(
+    non_camel_case_types,
+    non_snake_case,
+    clippy::pub_underscore_fields,
+    clippy::style,
+    clippy::empty_structs_with_brackets
+)]
 pub mod GetCurvePoolBatchRequest {
     use super::*;
     use alloy::sol_types as alloy_sol_types;
@@ -40,20 +46,21 @@ pub mod GetCurvePoolBatchRequest {
     /// The runtime bytecode of the contract, as deployed on the network.
     ///
     /// ```text
-    ///0x60806040525f80fdfea26469706673582212206c435a67081b26a0236d033d0664be7007a37a445abe9f5b645164e43bd3916664736f6c634300081a0033
+    ///0x60806040525f80fdfea26469706673582212204b455f5c0bf95c81c398b14eade6dd75150d4be0563c3274d5393fa42234f13564736f6c634300081a0033
     /// ```
     #[rustfmt::skip]
     #[allow(clippy::all)]
     pub static DEPLOYED_BYTECODE: alloy_sol_types::private::Bytes = alloy_sol_types::private::Bytes::from_static(
-        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 lCZg\x08\x1B&\xA0#m\x03=\x06d\xBEp\x07\xA3zDZ\xBE\x9F[dQd\xE4;\xD3\x91fdsolcC\0\x08\x1A\x003",
+        b"`\x80`@R_\x80\xFD\xFE\xA2dipfsX\"\x12 KE_\\\x0B\xF9\\\x81\xC3\x98\xB1N\xAD\xE6\xDDu\x15\rK\xE0V<2t\xD59?\xA4\"4\xF15dsolcC\0\x08\x1A\x003",
     );
     /**Constructor`.
 ```solidity
 constructor(address[] pools);
 ```*/
-    #[allow(non_camel_case_types, non_snake_case)]
+    #[allow(non_camel_case_types, non_snake_case, clippy::pub_underscore_fields)]
     #[derive(Clone)]
     pub struct constructorCall {
+        #[allow(missing_docs)]
         pub pools: alloy::sol_types::private::Vec<alloy::sol_types::private::Address>,
     }
     const _: () = {
