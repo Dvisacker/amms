@@ -3,6 +3,7 @@ pub mod factory;
 
 use crate::{
     amm::{consts::*, AutomatedMarketMaker, IErc20},
+    bindings::getclpoolticksinrange::PoolUtils::PopulatedTick,
     errors::{AMMError, ArithmeticError, EventLogError, SwapSimulationError},
 };
 use alloy::{
@@ -1190,21 +1191,21 @@ impl UniswapV3Pool {
         Ok(())
     }
 
-    pub fn populate_ticks_from_tick_data(&mut self, tick_data: Vec<UniswapV3TickData>) {
+    pub fn populate_ticks_from_tick_data(&mut self, tick_data: Vec<PopulatedTick>) {
         self.ticks = HashMap::new();
         self.tick_bitmap = HashMap::new();
         for tick in tick_data {
             self.ticks.insert(
-                tick.tick,
+                tick.tick.as_i32(),
                 Info {
-                    liquidity_gross: tick.liquidity_gross,
-                    liquidity_net: tick.liquidity_net,
-                    initialized: tick.initialized,
+                    liquidity_gross: tick.liquidityGross,
+                    liquidity_net: tick.liquidityNet,
+                    initialized: tick.liquidityGross > 0,
                 },
             );
 
-            if tick.initialized {
-                self.flip_tick(tick.tick, self.tick_spacing);
+            if tick.liquidityGross > 0 {
+                self.flip_tick(tick.tick.as_i32(), self.tick_spacing);
             }
         }
     }

@@ -14,8 +14,11 @@ use tracing::instrument;
 use crate::{
     amm::{AutomatedMarketMaker, AMM},
     bindings::{
+        getclpoolticksinrange::{
+            GetCLPoolTicksInRange::{self},
+            PoolUtils::PopulatedTick,
+        },
         getuniswapv3pooldatabatchrequest::GetUniswapV3PoolDataBatchRequest,
-        getuniswapv3tickdatabatchrequest::GetUniswapV3TickDataBatchRequest,
         getuniv3pooldata::GetUniV3PoolData,
         syncuniswapv3poolbatchrequest::SyncUniswapV3PoolBatchRequest,
     },
@@ -23,34 +26,6 @@ use crate::{
 };
 
 use super::UniswapV3Pool;
-
-// sol! {
-//     #[allow(missing_docs)]
-//     #[sol(rpc)]
-//     IGetUniswapV3PoolDataBatchRequest,
-//     "src/amm/uniswap_v3/batch_request/GetUniswapV3PoolDataBatchRequestABI.json"
-// }
-
-// sol! {
-//     #[allow(missing_docs)]
-//     #[sol(rpc)]
-//     IGetUniswapV3TickDataBatchRequest,
-//     "src/amm/uniswap_v3/batch_request/GetUniswapV3TickDataBatchRequestABI.json"
-// }
-
-// sol! {
-//     #[allow(missing_docs)]
-//     #[sol(rpc)]
-//     ISyncUniswapV3PoolBatchRequest,
-//     "src/amm/uniswap_v3/batch_request/SyncUniswapV3PoolBatchRequestABI.json"
-// }
-
-// sol! {
-//     #[allow(missing_docs)]
-//     #[sol(rpc)]
-//     IGetUniV3PoolData,
-//     "src/amm/uniswap_v3/batch_request/GetUniV3PoolData.json"
-// }
 
 sol! {
     struct TickData {
@@ -62,6 +37,11 @@ sol! {
 
     struct TicksWithBlock {
         TickData[] ticks;
+        uint256 blockNumber;
+    }
+
+    struct PopulatedTicksWithBlock {
+        PopulatedTick[] ticks;
         uint256 blockNumber;
     }
 }
@@ -270,39 +250,30 @@ where
     Ok(())
 }
 
-pub struct UniswapV3TickData {
-    pub initialized: bool,
-    pub tick: i32,
-    pub liquidity_gross: u128,
-    pub liquidity_net: i128,
-}
-
 pub async fn get_uniswap_v3_tick_data_batch_request<T, N, P>(
     pool: &UniswapV3Pool,
     tick_start: i32,
-    zero_for_one: bool,
-    num_ticks: u16,
+    num_ticks: u32,
     block_number: Option<u64>,
     provider: Arc<P>,
-) -> Result<(Vec<UniswapV3TickData>, U256), AMMError>
+) -> Result<(Vec<PopulatedTick>, U256), AMMError>
 where
     T: Transport + Clone,
     N: Network,
     P: Provider<T, N>,
 {
-    let mut all_tick_data: Vec<UniswapV3TickData> = vec![];
+    let mut all_tick_data: Vec<PopulatedTick> = vec![];
     let mut last_tick = tick_start;
-    let range = min(100, num_ticks as u16);
+    let range = min(100, num_ticks);
     let bn = block_number.unwrap_or(0);
 
     while last_tick < tick_start + num_ticks as i32 {
-        let deployer = GetUniswapV3TickDataBatchRequest::deploy_builder(
+        let deployer = GetCLPoolTicksInRange::deploy_builder(
             provider.clone(),
+            1, //uniswap v3
             pool.address,
-            zero_for_one,
             I24::unchecked_from(last_tick),
-            range,
-            I24::unchecked_from(pool.tick_spacing),
+            I24::unchecked_from(last_tick + range as i32),
         );
 
         let data = match block_number {
@@ -310,16 +281,17 @@ where
             None => deployer.call_raw().await?,
         };
 
-        let result = TicksWithBlock::abi_decode(&data, true)?;
+        let result = PopulatedTicksWithBlock::abi_decode(&data, true)?;
 
-        let tick_data: Vec<UniswapV3TickData> = result
+        let tick_data: Vec<PopulatedTick> = result
             .ticks
             .iter()
-            .map(|tick| UniswapV3TickData {
-                initialized: tick.initialized,
-                tick: tick.tick.as_i32(),
-                liquidity_gross: tick.liquidityGross,
-                liquidity_net: tick.liquidityNet,
+            .map(|tick| PopulatedTick {
+                tick: tick.tick,
+                liquidityNet: tick.liquidityNet,
+                liquidityGross: tick.liquidityGross,
+                feeGrowthOutside0X128: tick.feeGrowthOutside0X128,
+                feeGrowthOutside1X128: tick.feeGrowthOutside1X128,
             })
             .collect();
 
