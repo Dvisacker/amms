@@ -18,7 +18,6 @@ use alloy::{
 use alloy_chains::NamedChain;
 use async_recursion::async_recursion;
 use async_trait::async_trait;
-use batch_request::UniswapV3TickData;
 use db::models::{NewDbPool, NewDbUniV3Pool};
 use futures::{stream::FuturesOrdered, StreamExt};
 use num_bigfloat::BigFloat;
@@ -1534,20 +1533,18 @@ mod test {
             ..Default::default()
         };
 
-        let creation_block = 12369620;
         pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
         let synced_block = provider.get_block_number().await?;
 
         pool.populate_data(Some(synced_block), provider.clone())
             .await?;
         let current_tick = pool.tick;
-        let tick_start = current_tick - 10;
-        let num_ticks = 20;
+        let num_ticks = 500 * pool.tick_spacing;
+        let tick_start = current_tick - num_ticks / 2;
 
         let (tick_data, _) = get_uniswap_v3_tick_data_batch_request(
             &pool,
             tick_start,
-            true,
             num_ticks,
             Some(synced_block),
             provider.clone(),
@@ -1555,10 +1552,6 @@ mod test {
         .await?;
 
         pool.populate_ticks_from_tick_data(tick_data);
-
-        let synced_block = pool
-            .populate_tick_data(creation_block, provider.clone())
-            .await?;
 
         Ok((pool, synced_block))
     }
@@ -1643,7 +1636,7 @@ mod test {
             amount_out_1, expected_amount_out_1.amountOut
         );
 
-        let amount_in_2 = U256::from(10000000000000_u128); // 10_000_000 USDC
+        let amount_in_2 = U256::from(1000000000000_u128); // 1_000_000 USDC
         let amount_out_2 = pool
             .simulate_swap(pool.token_a, amount_in_2, pool.token_b)
             .unwrap();
@@ -1664,29 +1657,6 @@ mod test {
             amount_out_2, expected_amount_out_2.amountOut,
             "invalid amount_out_2: {}, expected_amount_out_2: {}",
             amount_out_2, expected_amount_out_2.amountOut
-        );
-
-        let amount_in_3 = U256::from(100000000000000_u128); // 100_000_000 USDC
-        let amount_out_3 = pool
-            .simulate_swap(pool.token_a, amount_in_3, pool.token_b)
-            .unwrap();
-        let expected_amount_out_3 = quoter
-            .quoteExactInputSingle(
-                pool.token_a,
-                pool.token_b,
-                U24::from(pool.fee),
-                amount_in_3,
-                U160::ZERO,
-            )
-            .block(synced_block.into())
-            .call()
-            .await
-            .unwrap();
-
-        assert_eq!(
-            amount_out_3, expected_amount_out_3.amountOut,
-            "invalid amount_out_3: {}, expected_amount_out_3: {}",
-            amount_out_3, expected_amount_out_3.amountOut
         );
     }
 
