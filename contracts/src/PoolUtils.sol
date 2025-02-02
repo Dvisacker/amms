@@ -43,6 +43,10 @@ abstract contract PoolUtils {
         uint256 feeGrowthOutside1X128;
     }
 
+    struct PopulatedTicks {
+        PopulatedTick[] ticks;
+    }
+
     /// @notice Returns the position key of the given owner and tick range
     /// @param key owner The address of the position owner
     /// tickLower The lower tick boundary of the position

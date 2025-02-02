@@ -5,12 +5,14 @@ import {DEX} from "./PoolUtils.sol";
 import "./PoolUtils.sol";
 import "./IAerodromeCLPool.sol";
 
+
+
 /* 
 Original contract by Aperture Finance
 */
 contract GetCLPoolTicksInRange is PoolUtils {
     constructor(DEX dex, V3PoolCallee pool, int24 tickLower, int24 tickUpper) payable {
-        PopulatedTick[] memory populatedTicks = getPopulatedTicksInRange(dex, pool, tickLower, tickUpper);
+        PopulatedTicks memory populatedTicks = getPopulatedTicksInRange(dex, pool, tickLower, tickUpper);
         bytes memory returnData = abi.encode(populatedTicks);
         assembly ("memory-safe") {
             revert(add(returnData, 0x20), mload(returnData))
@@ -27,7 +29,7 @@ contract GetCLPoolTicksInRange is PoolUtils {
         V3PoolCallee pool,
         int24 tickLower,
         int24 tickUpper
-    ) public payable returns (PopulatedTick[] memory populatedTicks) {
+    ) public payable returns (PopulatedTicks memory populatedTicks) {
         require(tickLower <= tickUpper);
         // checks that the pool exists
         int24 tickSpacing = IUniswapV3Pool(V3PoolCallee.unwrap(pool)).tickSpacing();
@@ -35,7 +37,7 @@ contract GetCLPoolTicksInRange is PoolUtils {
         unchecked {
             (uint256[] memory tickBitmap, uint256 count) = getTickBitmapAndCount(pool, wordPosLower, wordPosUpper);
             // fetch populated tick data
-            populatedTicks = new PopulatedTick[](count);
+            populatedTicks.ticks = new PopulatedTick[](count);
             uint256 idx;
             for (int16 wordPos = wordPosLower; wordPos <= wordPosUpper; ++wordPos) {
                 idx = populateTicksInWord(
@@ -44,7 +46,7 @@ contract GetCLPoolTicksInRange is PoolUtils {
                     wordPos,
                     tickSpacing,
                     tickBitmap[uint16(wordPos - wordPosLower)],
-                    populatedTicks,
+                    populatedTicks.ticks,
                     idx
                 );
             }

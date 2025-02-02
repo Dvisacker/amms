@@ -1,14 +1,14 @@
-use std::{cmp::min, sync::Arc, vec};
-
 use alloy::{
     dyn_abi::{DynSolType, DynSolValue},
+    hex,
     network::Network,
-    primitives::{aliases::I24, Address, U256},
+    primitives::{aliases::I24, Address, Bytes, U256},
     providers::Provider,
     sol,
     sol_types::SolType,
     transports::Transport,
 };
+use std::{cmp::min, sync::Arc, vec};
 use tracing::instrument;
 
 use crate::{
@@ -43,6 +43,10 @@ sol! {
     struct PopulatedTicksWithBlock {
         PopulatedTick[] ticks;
         uint256 blockNumber;
+    }
+
+    struct PopulatedTicks {
+        PopulatedTick[] ticks;
     }
 }
 
@@ -253,7 +257,7 @@ where
 pub async fn get_uniswap_v3_tick_data_batch_request<T, N, P>(
     pool: &UniswapV3Pool,
     tick_start: i32,
-    num_ticks: u32,
+    num_ticks: i32,
     block_number: Option<u64>,
     provider: Arc<P>,
 ) -> Result<(Vec<PopulatedTick>, U256), AMMError>
@@ -267,21 +271,32 @@ where
     let range = min(100, num_ticks);
     let bn = block_number.unwrap_or(0);
 
-    while last_tick < tick_start + num_ticks as i32 {
+    while last_tick < tick_start + num_ticks {
         let deployer = GetCLPoolTicksInRange::deploy_builder(
             provider.clone(),
             1, //uniswap v3
             pool.address,
             I24::unchecked_from(last_tick),
-            I24::unchecked_from(last_tick + range as i32),
+            I24::unchecked_from(last_tick + range),
         );
 
-        let data = match block_number {
-            Some(number) => deployer.block(number.into()).call_raw().await?,
-            None => deployer.call_raw().await?,
+        // The tick range contract returns a revert with the data in the error message
+        // This allows us to bypass the codesize limit
+        let data = match deployer.call_raw().await {
+            Err(err) => {
+                let err_string = err.to_string();
+
+                if let Some(data_start) = err_string.find("data: ") {
+                    let data_hex = &err_string[data_start + 7..].trim_matches('"');
+                    hex::decode(&data_hex[2..]).unwrap()
+                } else {
+                    return Ok((vec![], U256::from(bn)));
+                }
+            }
+            _ => vec![],
         };
 
-        let result = PopulatedTicksWithBlock::abi_decode(&data, true)?;
+        let result = PopulatedTicks::abi_decode(&data, true)?;
 
         let tick_data: Vec<PopulatedTick> = result
             .ticks
@@ -295,10 +310,8 @@ where
             })
             .collect();
 
-        println!("Adding tick_data: {:?}", tick_data[0].tick);
-
         all_tick_data.extend(tick_data);
-        last_tick += range as i32;
+        last_tick += range;
     }
 
     Ok((all_tick_data, U256::from(bn)))
