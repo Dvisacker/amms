@@ -2,10 +2,12 @@
 pragma solidity ^0.8.0;
 
 import {TickMath} from "../lib/uni-v3-lib/src/TickMath.sol";
-import "./PoolUtils.sol";
-import {DEX} from "./PoolUtils.sol";
+import "./PoolHelpers.sol";
 
-contract GetCLPoolTickBitmap is PoolUtils {
+/* 
+Original contract by Aperture Finance
+*/
+contract GetCLPoolTickBitmap is PoolHelpers {
     constructor(DEX dex, V3PoolCallee pool) payable {
         Slot[] memory slots = getTickBitmap(dex, pool);
         bytes memory returnData = abi.encode(slots);

@@ -13,13 +13,33 @@ enum DEX {
     SlipStream
 }
 
-/* 
-Original contract by Aperture Finance
-*/
-abstract contract PoolUtils {
+abstract contract PoolHelpers {
     using FullMath for uint128;
 
     uint256 internal constant Q128 = 1 << 128;
+
+    struct UniswapV3PoolData {
+        address tokenA;
+        bytes32 tokenASymbol;
+        uint8 tokenADecimals;
+        address tokenB;
+        bytes32 tokenBSymbol;
+        uint8 tokenBDecimals;
+        address factory;
+        uint128 liquidity;
+        uint160 sqrtPrice;
+        int24 tick;
+        int24 tickSpacing;
+        uint24 fee;
+        int128 liquidityNet;
+    }
+
+    struct UniswapV3PoolPriceData {
+        uint128 liquidity;
+        uint160 sqrtPrice;
+        int24 tick;
+        int128 liquidityNet;
+    }
 
     /// @notice Struct for a storage slot and its raw data
     struct Slot {
@@ -46,6 +66,7 @@ abstract contract PoolUtils {
     struct PopulatedTicks {
         PopulatedTick[] ticks;
     }
+
 
     /// @notice Returns the position key of the given owner and tick range
     /// @param key owner The address of the position owner

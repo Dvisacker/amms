@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity ^0.8.0;
 
-import {DEX} from "./PoolUtils.sol";
-import "./PoolUtils.sol";
+import {DEX} from "./PoolHelpers.sol";
+import "./PoolHelpers.sol";
 import "./IAerodromeCLPool.sol";
 
 
@@ -10,7 +10,7 @@ import "./IAerodromeCLPool.sol";
 /* 
 Original contract by Aperture Finance
 */
-contract GetCLPoolTicksInRange is PoolUtils {
+contract GetCLPoolTicksInRange is PoolHelpers {
     constructor(DEX dex, V3PoolCallee pool, int24 tickLower, int24 tickUpper) payable {
         PopulatedTicks memory populatedTicks = getPopulatedTicksInRange(dex, pool, tickLower, tickUpper);
         bytes memory returnData = abi.encode(populatedTicks);
