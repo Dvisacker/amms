@@ -55,7 +55,12 @@ codegen-units = 1
 panic = "abort"
 
 [profile.dev]
-opt-level = 3
-lto = true
-codegen-units = 1
-debug = "full"
+opt-level = 0          # Basic optimizations for better dev experience
+debug = "line-tables-only"         # Full debug info for development
+incremental = true     # Faster recompilation
+codegen-units = 16    # Parallel compilation
+debug-assertions = true
+overflow-checks = true
+panic = "unwind"       # Enable stack traces
+lto = false           # Faster compilation
+rpath = false         # Don't embed library search paths
