@@ -268,7 +268,7 @@ where
 {
     let mut all_tick_data: Vec<PopulatedTick> = vec![];
     let mut last_tick = tick_start;
-    let range = min(100, num_ticks);
+    let range = min(2000, num_ticks);
     let bn = block_number.unwrap_or(0);
 
     while last_tick < tick_start + num_ticks {
