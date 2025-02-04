@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "./PoolHelpers.sol";
 interface IUniswapV2Pair {
     function token0() external view returns (address);
 
@@ -17,25 +18,30 @@ interface IERC20 {
  * @dev This contract is not meant to be deployed. Instead, use a static call with the
  *       deployment bytecode as payload.
  */
-contract GetUniswapV2PoolDataBatchRequest {
-    struct PoolData {
-        address tokenA;
-        uint8 tokenADecimals;
-        address tokenB;
-        uint8 tokenBDecimals;
-        uint256 reserve0;
-        uint256 reserve1;
-    }
+contract GetUniswapV2PoolDataBatchRequest is PoolHelpers {
 
     constructor(address[] memory pools) {
-        PoolData[] memory allPoolData = new PoolData[](pools.length);
+        UniswapV2PoolData[] memory allPoolData = getPoolData(pools);
+        bytes memory _abiEncodedData = abi.encode(allPoolData);
+
+        assembly {
+            // Return from the start of the data (discarding the original data address)
+            // up to the end of the memory used
+            let dataStart := add(_abiEncodedData, 0x20)
+            return(dataStart, sub(msize(), dataStart))
+        }
+        
+    }
+
+    function getPoolData(address[] memory pools) public returns (UniswapV2PoolData[] memory) {
+        UniswapV2PoolData[] memory allPoolData = new UniswapV2PoolData[](pools.length);
 
         for (uint256 i = 0; i < pools.length; ++i) {
             address poolAddress = pools[i];
 
             if (codeSizeIsZero(poolAddress)) continue;
 
-            PoolData memory poolData;
+            UniswapV2PoolData memory poolData;
 
             // Get tokens A and B
             poolData.tokenA = IUniswapV2Pair(poolAddress).token0();
@@ -108,16 +114,8 @@ contract GetUniswapV2PoolDataBatchRequest {
             allPoolData[i] = poolData;
         }
 
-        // ensure abi encoding, not needed here but increase reusability for different return types
-        // note: abi.encode add a first 32 bytes word with the address of the original data
-        bytes memory _abiEncodedData = abi.encode(allPoolData);
+        return allPoolData;
 
-        assembly {
-            // Return from the start of the data (discarding the original data address)
-            // up to the end of the memory used
-            let dataStart := add(_abiEncodedData, 0x20)
-            return(dataStart, sub(msize(), dataStart))
-        }
     }
 
     function codeSizeIsZero(address target) internal view returns (bool) {

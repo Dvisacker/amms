@@ -34,6 +34,18 @@ abstract contract PoolHelpers {
         int128 liquidityNet;
     }
 
+    struct UniswapV2PoolData {
+        address tokenA;
+        bytes32 tokenASymbol;
+        uint8 tokenADecimals;
+        address tokenB;
+        bytes32 tokenBSymbol;
+        uint8 tokenBDecimals;
+        uint256 reserve0;
+        uint256 reserve1;
+        address factory;
+    }
+
     struct UniswapV3PoolPriceData {
         uint128 liquidity;
         uint160 sqrtPrice;
