@@ -6,7 +6,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use alloy::{network::Network, primitives::Address, providers::Provider, transports::Transport};
+use alloy::{network::Network, primitives::Address, providers::Provider};
 
 use crate::amm::AutomatedMarketMaker;
 use serde::{Deserialize, Serialize};
@@ -52,15 +52,14 @@ impl Checkpoint {
 }
 
 // Get all pairs from last synced block and sync reserve values for each Dex in the `dexes` vec.
-pub async fn sync_amms_from_checkpoint<T, N, P, A>(
+pub async fn sync_amms_from_checkpoint<N, P, A>(
     path_to_checkpoint: A,
     step: u64,
     provider: Arc<P>,
 ) -> Result<(Vec<Factory>, Vec<AMM>), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N> + 'static,
+    P: Provider<N> + 'static,
     A: AsRef<Path>,
 {
     let current_block = provider.get_block_number().await?;
@@ -144,7 +143,7 @@ where
     Ok((checkpoint.factories, aggregated_amms))
 }
 
-pub async fn get_new_amms_from_range<T, N, P>(
+pub async fn get_new_amms_from_range<N, P>(
     factories: Vec<Factory>,
     from_block: u64,
     to_block: u64,
@@ -152,9 +151,8 @@ pub async fn get_new_amms_from_range<T, N, P>(
     provider: Arc<P>,
 ) -> Vec<JoinHandle<Result<Vec<AMM>, AMMError>>>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N> + 'static,
+    P: Provider<N> + 'static,
 {
     // Create the filter with all the pair created events
     // Aggregate the populated pools from each thread
@@ -183,15 +181,14 @@ where
     handles
 }
 
-pub async fn batch_sync_amms_from_checkpoint<T, N, P>(
+pub async fn batch_sync_amms_from_checkpoint<N, P>(
     mut amms: Vec<AMM>,
     block_number: Option<u64>,
     provider: Arc<P>,
 ) -> JoinHandle<Result<Vec<AMM>, AMMError>>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N> + 'static,
+    P: Provider<N> + 'static,
 {
     let factory = match amms[0] {
         AMM::UniswapV2Pool(_) => Some(Factory::UniswapV2Factory(UniswapV2Factory::new(
@@ -255,7 +252,7 @@ pub fn sort_amms(amms: Vec<AMM>) -> (Vec<AMM>, Vec<AMM>, Vec<AMM>, Vec<AMM>) {
     )
 }
 
-pub async fn get_new_pools_from_range<T, N, P>(
+pub async fn get_new_pools_from_range<N, P>(
     factories: Vec<Factory>,
     from_block: u64,
     to_block: u64,
@@ -263,9 +260,8 @@ pub async fn get_new_pools_from_range<T, N, P>(
     provider: Arc<P>,
 ) -> Vec<JoinHandle<Result<Vec<AMM>, AMMError>>>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N> + 'static,
+    P: Provider<N> + 'static,
 {
     // Create the filter with all the pair created events
     // Aggregate the populated pools from each thread

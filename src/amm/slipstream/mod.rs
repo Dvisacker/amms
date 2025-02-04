@@ -3,7 +3,7 @@ pub mod factory;
 
 use crate::{
     amm::{consts::*, AutomatedMarketMaker, IErc20},
-    bindings::getclpoolticksinrange::PoolHelpers::PopulatedTick,
+    bindings::getclpoolticksinrange::PoolUtils::PopulatedTick,
     errors::{AMMError, ArithmeticError, EventLogError, SwapSimulationError},
 };
 use alloy::{
@@ -13,6 +13,7 @@ use alloy::{
     rpc::types::eth::{Filter, Log},
     sol,
     sol_types::{SolCall, SolEvent},
+    transports::Transport,
 };
 use alloy_chains::NamedChain;
 use async_recursion::async_recursion;
@@ -40,7 +41,7 @@ sol! {
     /// Interface of the IUniswapV3Pool
     #[derive(Debug, PartialEq, Eq)]
     #[sol(rpc)]
-    contract IUniswapV3Pool {
+    contract IAerodromeCLPool {
         event Swap(address indexed sender, address indexed recipient, int256 amount0, int256 amount1, uint160 sqrtPriceX96, uint128 liquidity, int24 tick);
         event Burn(address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1);
         event Mint(address sender, address indexed owner, int24 indexed tickLower, int24 indexed tickUpper, uint128 amount, uint256 amount0, uint256 amount1);
@@ -58,7 +59,7 @@ sol! {
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct UniswapV3Pool {
+pub struct AerodromeCLPool {
     pub address: Address,
     pub token_a: Address,
     pub token_a_decimals: u8,
@@ -123,9 +124,9 @@ pub fn json_to_ticks(json: JsonValue) -> HashMap<i32, Info> {
 }
 
 // cast a NewDbUniV3Pool into a UniswapV3Pool
-impl From<NewDbUniV3Pool> for UniswapV3Pool {
+impl From<NewDbUniV3Pool> for AerodromeCLPool {
     fn from(pool: NewDbUniV3Pool) -> Self {
-        UniswapV3Pool {
+        AerodromeCLPool {
             chain: pool.chain.parse::<NamedChain>().unwrap(),
             exchange_name: ExchangeName::from_str(&pool.exchange_name.unwrap()).unwrap(),
             exchange_type: ExchangeType::from_str(&pool.exchange_type.unwrap()).unwrap(),
@@ -150,8 +151,8 @@ impl From<NewDbUniV3Pool> for UniswapV3Pool {
 }
 
 // cast a UniswapV3Pool into a NewDbUniV3Pool
-impl From<UniswapV3Pool> for NewDbUniV3Pool {
-    fn from(pool: UniswapV3Pool) -> Self {
+impl From<AerodromeCLPool> for NewDbUniV3Pool {
+    fn from(pool: AerodromeCLPool) -> Self {
         NewDbUniV3Pool {
             address: pool.address.to_string(),
             chain: pool.chain.as_str().to_string(),
@@ -177,7 +178,7 @@ impl From<UniswapV3Pool> for NewDbUniV3Pool {
 }
 
 #[async_trait]
-impl AutomatedMarketMaker for UniswapV3Pool {
+impl AutomatedMarketMaker for AerodromeCLPool {
     fn address(&self) -> Address {
         self.address
     }
@@ -201,9 +202,9 @@ impl AutomatedMarketMaker for UniswapV3Pool {
     // This defines the event signatures to listen to that will produce events to be passed into AMM::sync_from_log()
     fn sync_on_event_signatures(&self) -> Vec<B256> {
         vec![
-            IUniswapV3Pool::Swap::SIGNATURE_HASH,
-            IUniswapV3Pool::Mint::SIGNATURE_HASH,
-            IUniswapV3Pool::Burn::SIGNATURE_HASH,
+            IAerodromeCLPool::Swap::SIGNATURE_HASH,
+            IAerodromeCLPool::Mint::SIGNATURE_HASH,
+            IAerodromeCLPool::Burn::SIGNATURE_HASH,
         ]
     }
 
@@ -211,11 +212,11 @@ impl AutomatedMarketMaker for UniswapV3Pool {
     fn sync_from_log(&mut self, log: Log) -> Result<(), EventLogError> {
         let event_signature = log.topics()[0];
 
-        if event_signature == IUniswapV3Pool::Burn::SIGNATURE_HASH {
+        if event_signature == IAerodromeCLPool::Burn::SIGNATURE_HASH {
             self.sync_from_burn_log(log)?;
-        } else if event_signature == IUniswapV3Pool::Mint::SIGNATURE_HASH {
+        } else if event_signature == IAerodromeCLPool::Mint::SIGNATURE_HASH {
             self.sync_from_mint_log(log)?;
-        } else if event_signature == IUniswapV3Pool::Swap::SIGNATURE_HASH {
+        } else if event_signature == IAerodromeCLPool::Swap::SIGNATURE_HASH {
             self.sync_from_swap_log(log)?;
         } else {
             Err(EventLogError::InvalidEventSignature)?
@@ -598,7 +599,7 @@ impl AutomatedMarketMaker for UniswapV3Pool {
     }
 }
 
-impl UniswapV3Pool {
+impl AerodromeCLPool {
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         address: Address,
@@ -620,8 +621,8 @@ impl UniswapV3Pool {
         exchange_name: ExchangeName,
         exchange_type: ExchangeType,
         chain: NamedChain,
-    ) -> UniswapV3Pool {
-        UniswapV3Pool {
+    ) -> AerodromeCLPool {
+        AerodromeCLPool {
             address,
             token_a,
             token_a_decimals,
@@ -653,7 +654,7 @@ impl UniswapV3Pool {
     }
 
     pub async fn new_empty(address: Address, chain: NamedChain) -> Result<Self, AMMError> {
-        let pool = UniswapV3Pool {
+        let pool = AerodromeCLPool {
             address,
             factory: Address::ZERO,
             liquidity_net: 0,
@@ -690,7 +691,7 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let mut pool = UniswapV3Pool {
+        let mut pool = AerodromeCLPool {
             address: pair_address,
             factory: Address::ZERO,
             liquidity_net: 0,
@@ -747,7 +748,7 @@ impl UniswapV3Pool {
                 let pool_created_event =
                     IUniswapV3Factory::PoolCreated::decode_log(&log.inner, true)?;
 
-                UniswapV3Pool::new_from_address(pool_created_event.pool, block_number, provider)
+                AerodromeCLPool::new_from_address(pool_created_event.pool, block_number, provider)
                     .await
             } else {
                 Err(EventLogError::LogBlockNumberNotFound)?
@@ -766,7 +767,7 @@ impl UniswapV3Pool {
             let pool_created_event =
                 IUniswapV3Factory::PoolCreated::decode_log(log.as_ref(), true)?;
 
-            Ok(UniswapV3Pool {
+            Ok(AerodromeCLPool {
                 address: pool_created_event.pool,
                 token_a: pool_created_event.token0,
                 token_a_decimals: 0,
@@ -807,8 +808,8 @@ impl UniswapV3Pool {
         let mut step_block = to_block - from_block;
         let filter = Filter::new()
             .event_signature(vec![
-                IUniswapV3Pool::Burn::SIGNATURE_HASH,
-                IUniswapV3Pool::Mint::SIGNATURE_HASH,
+                IAerodromeCLPool::Burn::SIGNATURE_HASH,
+                IAerodromeCLPool::Mint::SIGNATURE_HASH,
             ])
             .address(address)
             .from_block(from_block)
@@ -998,9 +999,9 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let v3_pool = IUniswapV3Pool::new(self.address, provider);
+        let v3_pool = IAerodromeCLPool::new(self.address, provider);
         let (word_position, _) = uniswap_v3_math::tick_bitmap::position(tick);
-        let IUniswapV3Pool::tickBitmapReturn { _0: bm } =
+        let IAerodromeCLPool::tickBitmapReturn { _0: bm } =
             v3_pool.tickBitmap(word_position).call().await?;
         Ok(bm)
     }
@@ -1015,8 +1016,8 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let v3_pool = IUniswapV3Pool::new(self.address, provider);
-        let IUniswapV3Pool::tickBitmapReturn { _0: bm } =
+        let v3_pool = IAerodromeCLPool::new(self.address, provider);
+        let IAerodromeCLPool::tickBitmapReturn { _0: bm } =
             v3_pool.tickBitmap(word_position).call().await?;
         Ok(bm)
     }
@@ -1027,8 +1028,8 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let v3_pool = IUniswapV3Pool::new(self.address, provider);
-        let IUniswapV3Pool::tickSpacingReturn { _0: ts } = v3_pool.tickSpacing().call().await?;
+        let v3_pool = IAerodromeCLPool::new(self.address, provider);
+        let IAerodromeCLPool::tickSpacingReturn { _0: ts } = v3_pool.tickSpacing().call().await?;
         Ok(ts.unchecked_into())
     }
 
@@ -1051,7 +1052,7 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let v3_pool = IUniswapV3Pool::new(self.address, provider.clone());
+        let v3_pool = IAerodromeCLPool::new(self.address, provider.clone());
 
         let tick_info = v3_pool.ticks(I24::unchecked_from(tick)).call().await?;
 
@@ -1100,8 +1101,8 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let v3_pool = IUniswapV3Pool::new(self.address, provider);
-        let IUniswapV3Pool::slot0Return {
+        let v3_pool = IAerodromeCLPool::new(self.address, provider);
+        let IAerodromeCLPool::slot0Return {
             _0,
             _1,
             _2,
@@ -1120,8 +1121,9 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let v3_pool = IUniswapV3Pool::new(self.address, provider);
-        let IUniswapV3Pool::liquidityReturn { _0: liquidity } = v3_pool.liquidity().call().await?;
+        let v3_pool = IAerodromeCLPool::new(self.address, provider);
+        let IAerodromeCLPool::liquidityReturn { _0: liquidity } =
+            v3_pool.liquidity().call().await?;
         Ok(liquidity)
     }
 
@@ -1136,7 +1138,7 @@ impl UniswapV3Pool {
 
     /// Updates the pool state from a burn event log.
     pub fn sync_from_burn_log(&mut self, log: Log) -> Result<(), alloy::dyn_abi::Error> {
-        let burn_event = IUniswapV3Pool::Burn::decode_log(log.as_ref(), true)?;
+        let burn_event = IAerodromeCLPool::Burn::decode_log(log.as_ref(), true)?;
 
         self.modify_position(
             burn_event.tickLower.unchecked_into(),
@@ -1151,7 +1153,7 @@ impl UniswapV3Pool {
 
     /// Updates the pool state from a mint event log.
     pub fn sync_from_mint_log(&mut self, log: Log) -> Result<(), alloy::dyn_abi::Error> {
-        let mint_event = IUniswapV3Pool::Mint::decode_log(log.as_ref(), true)?;
+        let mint_event = IAerodromeCLPool::Mint::decode_log(log.as_ref(), true)?;
 
         self.modify_position(
             mint_event.tickLower.unchecked_into(),
@@ -1278,7 +1280,7 @@ impl UniswapV3Pool {
 
     /// Updates the pool state from a swap event log.
     pub fn sync_from_swap_log(&mut self, log: Log) -> Result<(), alloy::sol_types::Error> {
-        let swap_event = IUniswapV3Pool::Swap::decode_log(log.as_ref(), true)?;
+        let swap_event = IAerodromeCLPool::Swap::decode_log(log.as_ref(), true)?;
 
         self.sqrt_price = swap_event.sqrtPriceX96.to();
         self.liquidity = swap_event.liquidity;
@@ -1316,7 +1318,7 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let IUniswapV3Pool::feeReturn { _0: fee } = IUniswapV3Pool::new(self.address, provider)
+        let IAerodromeCLPool::feeReturn { _0: fee } = IAerodromeCLPool::new(self.address, provider)
             .fee()
             .call()
             .await?;
@@ -1329,9 +1331,9 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let v3_pool = IUniswapV3Pool::new(self.address, provider);
+        let v3_pool = IAerodromeCLPool::new(self.address, provider);
 
-        let IUniswapV3Pool::token0Return { _0: token_0 } = match v3_pool.token0().call().await {
+        let IAerodromeCLPool::token0Return { _0: token_0 } = match v3_pool.token0().call().await {
             Ok(result) => result,
             Err(contract_error) => return Err(AMMError::ContractError(contract_error)),
         };
@@ -1344,9 +1346,9 @@ impl UniswapV3Pool {
         N: Network,
         P: Provider<N>,
     {
-        let v3_pool = IUniswapV3Pool::new(self.address, provider);
+        let v3_pool = IAerodromeCLPool::new(self.address, provider);
 
-        let IUniswapV3Pool::token1Return { _0: token_1 } = match v3_pool.token1().call().await {
+        let IAerodromeCLPool::token1Return { _0: token_1 } = match v3_pool.token1().call().await {
             Ok(result) => result,
             Err(contract_error) => return Err(AMMError::ContractError(contract_error)),
         };
@@ -1409,7 +1411,7 @@ impl UniswapV3Pool {
         sqrt_price_limit_x_96: U256,
         calldata: Vec<u8>,
     ) -> Result<Bytes, alloy::dyn_abi::Error> {
-        Ok(IUniswapV3Pool::swapCall {
+        Ok(IAerodromeCLPool::swapCall {
             recipient,
             zeroForOne: zero_for_one,
             amountSpecified: amount_specified,
@@ -1487,12 +1489,14 @@ mod test {
         }
     }
 
-    async fn initialize_usdc_weth_pool<N, P>(provider: Arc<P>) -> eyre::Result<(UniswapV3Pool, u64)>
+    async fn initialize_usdc_weth_pool<N, P>(
+        provider: Arc<P>,
+    ) -> eyre::Result<(AerodromeCLPool, u64)>
     where
         N: Network,
         P: Provider<N>,
     {
-        let mut pool = UniswapV3Pool {
+        let mut pool = AerodromeCLPool {
             address: address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
             ..Default::default()
         };
@@ -1512,7 +1516,6 @@ mod test {
             num_ticks,
             Some(synced_block),
             provider.clone(),
-            1, //uniswap v3
         )
         .await?;
 
@@ -1521,12 +1524,14 @@ mod test {
         Ok((pool, synced_block))
     }
 
-    async fn initialize_weth_link_pool<N, P>(provider: Arc<P>) -> eyre::Result<(UniswapV3Pool, u64)>
+    async fn initialize_weth_link_pool<N, P>(
+        provider: Arc<P>,
+    ) -> eyre::Result<(AerodromeCLPool, u64)>
     where
         N: Network,
         P: Provider<N>,
     {
-        let mut pool = UniswapV3Pool {
+        let mut pool = AerodromeCLPool {
             address: address!("a6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8"),
             ..Default::default()
         };
@@ -1537,42 +1542,6 @@ mod test {
             .populate_tick_data(creation_block, provider.clone())
             .await?;
         pool.populate_data(Some(synced_block), provider).await?;
-
-        Ok((pool, synced_block))
-    }
-
-    async fn initialize_slipstream_usdc_weth_pool<N, P>(
-        provider: Arc<P>,
-    ) -> eyre::Result<(UniswapV3Pool, u64)>
-    where
-        N: Network,
-        P: Provider<N>,
-    {
-        let mut pool = UniswapV3Pool {
-            address: address!("0x70aCDF2Ad0bf2402C957154f944c19Ef4e1cbAE1"),
-            ..Default::default()
-        };
-
-        pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
-        let synced_block = provider.get_block_number().await?;
-
-        pool.populate_data(Some(synced_block), provider.clone())
-            .await?;
-        let current_tick = pool.tick;
-        let num_ticks = 2000 * pool.tick_spacing;
-        let tick_start = current_tick - num_ticks / 2;
-
-        let (tick_data, _) = get_uniswap_v3_tick_data_batch_request(
-            &pool,
-            tick_start,
-            num_ticks,
-            Some(synced_block),
-            provider.clone(),
-            3, //slipstream
-        )
-        .await?;
-
-        pool.populate_ticks_from_tick_data(tick_data);
 
         Ok((pool, synced_block))
     }
@@ -2181,7 +2150,7 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let pool = UniswapV3Pool::new_from_address(
+        let pool = AerodromeCLPool::new_from_address(
             address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
             12369620,
             provider.clone(),
@@ -2215,7 +2184,6 @@ mod test {
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
         let (pool, _synced_block) = initialize_usdc_weth_pool(provider.clone()).await.unwrap();
-
         assert_eq!(
             pool.address,
             address!("88e6a0c2ddd26feeb64f039a2c41296fcb3f5640")
@@ -2240,7 +2208,7 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let mut pool = UniswapV3Pool {
+        let mut pool = AerodromeCLPool {
             address: address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
             ..Default::default()
         };
@@ -2255,14 +2223,14 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let mut pool = UniswapV3Pool {
+        let mut pool = AerodromeCLPool {
             address: address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
             ..Default::default()
         };
 
         pool.populate_data(None, provider.clone()).await.unwrap();
 
-        let pool_at_block = IUniswapV3Pool::new(
+        let pool_at_block = IAerodromeCLPool::new(
             address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
             provider.clone(),
         );
@@ -2295,14 +2263,14 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let mut pool = UniswapV3Pool {
+        let mut pool = AerodromeCLPool {
             address: address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
             ..Default::default()
         };
 
         pool.populate_data(None, provider.clone()).await.unwrap();
 
-        let block_pool = IUniswapV3Pool::new(
+        let block_pool = IAerodromeCLPool::new(
             address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
             provider.clone(),
         );
@@ -2321,89 +2289,5 @@ mod test {
 
         assert_eq!(float_price_a, 0.0006081236083117488);
         assert_eq!(float_price_b, 1644.4025299004006);
-    }
-
-    #[tokio::test]
-    #[ignore] // Ignoring to not throttle the Provider on workflows
-    async fn test_simulate_swap_slipstream_usdc_weth() {
-        dotenv::dotenv().ok();
-        let rpc_endpoint = std::env::var("BASE_RPC_URL").expect("Missing RPC url");
-        let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
-
-        let (pool, synced_block) = initialize_slipstream_usdc_weth_pool(provider.clone())
-            .await
-            .unwrap();
-        // let quoter = IQuoter::new(
-        //     address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
-        //     provider.clone(),
-        // );
-
-        // let amount_in = U256::from(100000000); // 100 USDC
-        // let amount_out = pool
-        //     .simulate_swap(pool.token_a, amount_in, pool.token_b)
-        //     .unwrap();
-        // let expected_amount_out = quoter
-        //     .quoteExactInputSingle(
-        //         pool.token_a,
-        //         pool.token_b,
-        //         U24::from(pool.fee),
-        //         amount_in,
-        //         U160::ZERO,
-        //     )
-        //     .block(synced_block.into())
-        //     .call()
-        //     .await
-        //     .unwrap();
-
-        // assert_eq!(
-        //     amount_out, expected_amount_out.amountOut,
-        //     "invalid amount_out: {}, expected_amount_out: {}",
-        //     amount_out, expected_amount_out.amountOut
-        // );
-
-        // let amount_in_1 = U256::from(10000000000_u64); // 10_000 USDC
-        // let amount_out_1 = pool
-        //     .simulate_swap(pool.token_a, amount_in_1, pool.token_b)
-        //     .unwrap();
-        // let expected_amount_out_1 = quoter
-        //     .quoteExactInputSingle(
-        //         pool.token_a,
-        //         pool.token_b,
-        //         U24::from(pool.fee),
-        //         amount_in_1,
-        //         U160::ZERO,
-        //     )
-        //     .block(synced_block.into())
-        //     .call()
-        //     .await
-        //     .unwrap();
-        // assert_eq!(
-        //     amount_out_1, expected_amount_out_1.amountOut,
-        //     "invalid amount_out_1: {}, expected_amount_out_1: {}",
-        //     amount_out_1, expected_amount_out_1.amountOut
-        // );
-
-        // let amount_in_2 = U256::from(1000000000000_u128); // 1_000_000 USDC
-        // let amount_out_2 = pool
-        //     .simulate_swap(pool.token_a, amount_in_2, pool.token_b)
-        //     .unwrap();
-        // let expected_amount_out_2 = quoter
-        //     .quoteExactInputSingle(
-        //         pool.token_a,
-        //         pool.token_b,
-        //         U24::from(pool.fee),
-        //         amount_in_2,
-        //         U160::ZERO,
-        //     )
-        //     .block(synced_block.into())
-        //     .call()
-        //     .await
-        //     .unwrap();
-
-        // assert_eq!(
-        //     amount_out_2, expected_amount_out_2.amountOut,
-        //     "invalid amount_out_2: {}, expected_amount_out_2: {}",
-        //     amount_out_2, expected_amount_out_2.amountOut
-        // );
     }
 }

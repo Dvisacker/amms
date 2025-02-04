@@ -9,7 +9,6 @@ use alloy::{
     rpc::types::eth::Log,
     sol,
     sol_types::SolEvent,
-    transports::Transport,
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
@@ -97,15 +96,14 @@ impl CurvePool {
         }
     }
 
-    pub async fn new_from_address<T, N, P>(
+    pub async fn new_from_address<N, P>(
         address: Address,
         _fee: u32,
         provider: Arc<P>,
     ) -> Result<Self, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let mut pool = CurvePool::new(
             address,
@@ -123,11 +121,10 @@ impl CurvePool {
         Ok(pool)
     }
 
-    pub async fn new_from_log<T, N, P>(log: Log, provider: Arc<P>) -> Result<Self, AMMError>
+    pub async fn new_from_log<N, P>(log: Log, provider: Arc<P>) -> Result<Self, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let event_signature = log.topics()[0];
 
@@ -140,7 +137,7 @@ impl CurvePool {
         }
     }
 
-    // async fn get_coin_data<T, N, P>(
+    // async fn get_coin_data<N, P>(
     //     &self,
     //     coin_address: Address,
     //     provider: Arc<P>,
@@ -148,7 +145,7 @@ impl CurvePool {
     // where
     //     T: Transport + Clone,
     //     N: Network,
-    //     P: Provider<T, N>,
+    //     P: Provider<N>,
     // {
     //     let erc20 = IErc20::new(coin_address, provider.clone());
 
@@ -172,11 +169,10 @@ impl AutomatedMarketMaker for CurvePool {
     }
 
     #[instrument(skip(self, provider), level = "debug")]
-    async fn sync<T, N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
+    async fn sync<N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let pool = IStableSwapPool::new(self.address, provider.clone());
 
@@ -194,15 +190,14 @@ impl AutomatedMarketMaker for CurvePool {
     }
 
     #[instrument(skip(self, provider), level = "debug")]
-    async fn populate_data<T, N, P>(
+    async fn populate_data<N, P>(
         &mut self,
         _block_number: Option<u64>,
         provider: Arc<P>,
     ) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         batch_request::get_curve_pool_data_batch_request(self, provider.clone()).await?;
         Ok(())

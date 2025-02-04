@@ -10,7 +10,7 @@ use crate::{
     filters,
 };
 
-use alloy::{network::Network, providers::Provider, transports::Transport};
+use alloy::{network::Network, providers::Provider};
 
 use std::sync::Arc;
 
@@ -21,16 +21,15 @@ use std::sync::Arc;
 /// checkpoint_path - A path to save a checkpoint of the synced AMMs.
 /// step - The step size for batched RPC requests.
 /// Returns a tuple of the synced AMMs and the last synced block number.
-pub async fn sync_amms<T, N, P>(
+pub async fn sync_amms<N, P>(
     factories: Vec<Factory>,
     provider: Arc<P>,
     checkpoint_path: Option<&str>,
     step: u64,
 ) -> Result<(Vec<AMM>, u64), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N> + 'static,
+    P: Provider<N> + 'static,
 {
     let current_block = provider.get_block_number().await?;
 
@@ -89,15 +88,14 @@ pub fn amms_are_congruent(amms: &[AMM]) -> bool {
 }
 
 // Gets all pool data and sync reserves
-pub async fn populate_amms<T, N, P>(
+pub async fn populate_amms<N, P>(
     amms: &mut [AMM],
     block_number: u64,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     if amms.is_empty() {
         return Ok(());

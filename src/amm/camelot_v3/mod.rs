@@ -12,7 +12,6 @@ use alloy::{
     rpc::types::eth::{Filter, Log},
     sol,
     sol_types::{SolCall, SolEvent},
-    transports::Transport,
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
@@ -89,11 +88,10 @@ impl AutomatedMarketMaker for CamelotV3Pool {
     }
 
     #[instrument(skip(self, provider), level = "debug")]
-    async fn sync<T, N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
+    async fn sync<N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         batch_request::sync_camelot_v3_pool_batch_request(self, provider.clone()).await?;
         Ok(())
@@ -146,15 +144,14 @@ impl AutomatedMarketMaker for CamelotV3Pool {
         }
     }
     // NOTE: This function will not populate the tick_bitmap and ticks, if you want to populate those, you must call populate_tick_data on an initialized pool
-    async fn populate_data<T, N, P>(
+    async fn populate_data<N, P>(
         &mut self,
         block_number: Option<u64>,
         provider: Arc<P>,
     ) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         batch_request::get_camelot_v3_pool_data_batch_request(self, block_number, provider.clone())
             .await?;
@@ -541,15 +538,14 @@ impl CamelotV3Pool {
     /// Creates a new instance of the pool from the pair address.
     ///
     /// This function will populate all pool data.
-    pub async fn new_from_address<T, N, P>(
+    pub async fn new_from_address<N, P>(
         pair_address: Address,
         creation_block: u64,
         provider: Arc<P>,
     ) -> Result<Self, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let mut pool = CamelotV3Pool {
             address: pair_address,
@@ -591,11 +587,10 @@ impl CamelotV3Pool {
     /// Creates a new instance of the pool from a log.
     ///
     /// This function will populate all pool data.
-    pub async fn new_from_log<T, N, P>(log: Log, provider: Arc<P>) -> Result<Self, AMMError>
+    pub async fn new_from_log<N, P>(log: Log, provider: Arc<P>) -> Result<Self, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let event_signature = log.topics()[0];
 
@@ -648,15 +643,14 @@ impl CamelotV3Pool {
     /// Populates the `tick_bitmap` and `ticks` fields of the pool to the current block.
     ///
     /// Returns the last synced block number.
-    pub async fn populate_tick_data<T, N, P>(
+    pub async fn populate_tick_data<N, P>(
         &mut self,
         mut from_block: u64,
         provider: Arc<P>,
     ) -> Result<u64, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let current_block = provider
             .get_block_number()
@@ -732,15 +726,10 @@ impl CamelotV3Pool {
     }
 
     /// Returns the word position of a tick in the `tick_bitmap`.
-    pub async fn get_tick_word<T, N, P>(
-        &self,
-        tick: i32,
-        provider: Arc<P>,
-    ) -> Result<U256, AMMError>
+    pub async fn get_tick_word<N, P>(&self, tick: i32, provider: Arc<P>) -> Result<U256, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
         let (word_position, _) = uniswap_v3_math::tick_bitmap::position(tick);
@@ -750,15 +739,14 @@ impl CamelotV3Pool {
     }
 
     /// Returns the next word in the `tick_bitmap` after a given word position.
-    pub async fn get_next_word<T, N, P>(
+    pub async fn get_next_word<N, P>(
         &self,
         word_position: i16,
         provider: Arc<P>,
     ) -> Result<U256, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
         let ICamelotV3Pool::tickBitmapReturn { _0: bm } =
@@ -767,11 +755,10 @@ impl CamelotV3Pool {
     }
 
     /// Returns the tick spacing of the pool.
-    pub async fn get_tick_spacing<T, N, P>(&self, provider: Arc<P>) -> Result<i32, AMMError>
+    pub async fn get_tick_spacing<N, P>(&self, provider: Arc<P>) -> Result<i32, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
         let ICamelotV3Pool::tickSpacingReturn { _0: ts } = v3_pool.tickSpacing().call().await?;
@@ -779,25 +766,23 @@ impl CamelotV3Pool {
     }
 
     /// Fetches the current tick of the pool via static call.
-    pub async fn get_tick<T, N, P>(&self, provider: Arc<P>) -> Result<i32, AMMError>
+    pub async fn get_tick<N, P>(&self, provider: Arc<P>) -> Result<i32, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         Ok(self.get_slot_0(provider).await?.1)
     }
 
     /// Fetches the tick info of a given tick via static call.
-    pub async fn get_tick_info<T, N, P>(
+    pub async fn get_tick_info<N, P>(
         &self,
         tick: i32,
         provider: Arc<P>,
     ) -> Result<(u128, i128, U256, U256, i64, U256, u32, bool), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider.clone());
 
@@ -816,44 +801,37 @@ impl CamelotV3Pool {
     }
 
     /// Fetches `liquidity_net` at a given tick via static call.
-    pub async fn get_liquidity_net<T, N, P>(
+    pub async fn get_liquidity_net<N, P>(
         &self,
         tick: i32,
         provider: Arc<P>,
     ) -> Result<i128, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let tick_info = self.get_tick_info(tick, provider).await?;
         Ok(tick_info.1)
     }
 
     /// Fetches whether a specified tick is initialized via static call.
-    pub async fn get_initialized<T, N, P>(
-        &self,
-        tick: i32,
-        provider: Arc<P>,
-    ) -> Result<bool, AMMError>
+    pub async fn get_initialized<N, P>(&self, tick: i32, provider: Arc<P>) -> Result<bool, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let tick_info = self.get_tick_info(tick, provider).await?;
         Ok(tick_info.7)
     }
 
     /// Fetches the current slot 0 of the pool via static call.
-    pub async fn get_slot_0<T, N, P>(
+    pub async fn get_slot_0<N, P>(
         &self,
         provider: Arc<P>,
     ) -> Result<(U256, i32, u16, u16, u16, u8, bool), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
         let ICamelotV3Pool::slot0Return {
@@ -869,11 +847,10 @@ impl CamelotV3Pool {
     }
 
     /// Fetches the current liquidity of the pool via static call.
-    pub async fn get_liquidity<T, N, P>(&self, provider: Arc<P>) -> Result<u128, AMMError>
+    pub async fn get_liquidity<N, P>(&self, provider: Arc<P>) -> Result<u128, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
         let ICamelotV3Pool::liquidityReturn { _0: liquidity } = v3_pool.liquidity().call().await?;
@@ -881,11 +858,10 @@ impl CamelotV3Pool {
     }
 
     /// Fetches the current sqrt price of the pool via static call.
-    pub async fn get_sqrt_price<T, N, P>(&self, provider: Arc<P>) -> Result<U256, AMMError>
+    pub async fn get_sqrt_price<N, P>(&self, provider: Arc<P>) -> Result<U256, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         Ok(self.get_slot_0(provider).await?.0)
     }
@@ -1026,14 +1002,10 @@ impl CamelotV3Pool {
         Ok(())
     }
 
-    pub async fn get_token_decimals<T, N, P>(
-        &mut self,
-        provider: Arc<P>,
-    ) -> Result<(u8, u8), AMMError>
+    pub async fn get_token_decimals<N, P>(&mut self, provider: Arc<P>) -> Result<(u8, u8), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let IErc20::decimalsReturn {
             _0: token_a_decimals,
@@ -1052,11 +1024,10 @@ impl CamelotV3Pool {
         Ok((token_a_decimals, token_b_decimals))
     }
 
-    pub async fn get_fee<T, N, P>(&mut self, provider: Arc<P>) -> Result<u32, AMMError>
+    pub async fn get_fee<N, P>(&mut self, provider: Arc<P>) -> Result<u32, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let ICamelotV3Pool::feeReturn { _0: fee } = ICamelotV3Pool::new(self.address, provider)
             .fee()
@@ -1066,11 +1037,10 @@ impl CamelotV3Pool {
         Ok(fee.to())
     }
 
-    pub async fn get_token_0<T, N, P>(&self, provider: Arc<P>) -> Result<Address, AMMError>
+    pub async fn get_token_0<N, P>(&self, provider: Arc<P>) -> Result<Address, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
 
@@ -1082,11 +1052,10 @@ impl CamelotV3Pool {
         Ok(token_0)
     }
 
-    pub async fn get_token_1<T, N, P>(&self, provider: Arc<P>) -> Result<Address, AMMError>
+    pub async fn get_token_1<N, P>(&self, provider: Arc<P>) -> Result<Address, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let v3_pool = ICamelotV3Pool::new(self.address, provider);
 

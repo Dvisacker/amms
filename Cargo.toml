@@ -13,7 +13,7 @@ exclude = ["target/*", ".github/*", ".gitignore"]
 [dependencies]
 tokio = { version = "1.40.0", features = ["full"] }
 uniswap_v3_math = { git = "https://github.com/0xKitsune/uniswap-v3-math.git" }
-alloy = { version = "0.9.2", features = ["full"] }
+alloy = { version = "0.11.0", features = ["full"] }
 alloy-chains = "0.1.57"
 tracing = "0.1.37"
 async-recursion = "1.0.5"
@@ -41,7 +41,7 @@ artemis = []
 [dev-dependencies]
 dotenv = "0.15.0"
 provider = { path = "../provider" }
-rand = "0.8.5"
+rand = "0.9.0"
 tracing-subscriber = "0.3"
 criterion = "0.5"
 tokio = { version = "1.40.0", default-features = false, features = [

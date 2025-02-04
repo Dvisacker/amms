@@ -75,11 +75,10 @@ pub struct StateSpaceManager<T, N, P, const CAP: usize> {
     phantom: PhantomData<(T, N)>,
 }
 
-impl<T, N, P> StateSpaceManager<T, N, P, 30>
+impl<N, P> StateSpaceManager<T, N, P, 30>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N> + 'static,
+    P: Provider<N> + 'static,
 {
     pub fn new(amms: Vec<AMM>, provider: Arc<P>) -> Self {
         Self {
@@ -224,9 +223,8 @@ where
 
 impl<T, N, P, const CAP: usize> StateSpaceManager<T, N, P, CAP>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N> + 'static,
+    P: Provider<N> + 'static,
 {
     pub fn new_with_capacity(amms: Vec<AMM>, provider: Arc<P>) -> Self {
         Self {

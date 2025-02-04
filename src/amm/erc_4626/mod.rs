@@ -9,7 +9,6 @@ use alloy::{
     rpc::types::eth::Log,
     sol,
     sol_types::SolEvent,
-    transports::Transport,
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
@@ -84,11 +83,10 @@ impl AutomatedMarketMaker for ERC4626Vault {
     }
 
     #[instrument(skip(self, provider), level = "debug")]
-    async fn sync<T, N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
+    async fn sync<N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let (vault_reserve, asset_reserve) = self.get_reserves(provider).await?;
         tracing::debug!(vault_reserve = ?vault_reserve, asset_reserve = ?asset_reserve, address = ?self.vault_token, "ER4626 sync");
@@ -127,15 +125,14 @@ impl AutomatedMarketMaker for ERC4626Vault {
     }
 
     #[instrument(skip(self, provider), level = "debug")]
-    async fn populate_data<T, N, P>(
+    async fn populate_data<N, P>(
         &mut self,
         _block_number: Option<u64>,
         provider: Arc<P>,
     ) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         batch_request::get_4626_vault_data_batch_request(self, provider.clone()).await?;
 
@@ -260,14 +257,13 @@ impl ERC4626Vault {
         }
     }
 
-    pub async fn new_from_address<T, N, P>(
+    pub async fn new_from_address<N, P>(
         vault_token: Address,
         provider: Arc<P>,
     ) -> Result<Self, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let mut vault = ERC4626Vault {
             vault_token,
@@ -301,11 +297,10 @@ impl ERC4626Vault {
             || self.asset_reserve.is_zero())
     }
 
-    pub async fn get_reserves<T, N, P>(&self, provider: Arc<P>) -> Result<(U256, U256), AMMError>
+    pub async fn get_reserves<N, P>(&self, provider: Arc<P>) -> Result<(U256, U256), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         // Initialize a new instance of the vault
         let vault = IERC4626Vault::new(self.vault_token, provider);

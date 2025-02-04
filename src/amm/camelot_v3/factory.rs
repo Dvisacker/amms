@@ -10,7 +10,6 @@ use alloy::{
     rpc::types::eth::{Filter, Log},
     sol,
     sol_types::SolEvent,
-    transports::Transport,
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
@@ -91,11 +90,10 @@ impl AutomatedMarketMakerFactory for CamelotV3Factory {
         ICamelotV3Factory::Pool::SIGNATURE_HASH
     }
 
-    async fn new_amm_from_log<T, N, P>(&self, log: Log, provider: Arc<P>) -> Result<AMM, AMMError>
+    async fn new_amm_from_log<N, P>(&self, log: Log, provider: Arc<P>) -> Result<AMM, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         if let Some(block_number) = log.block_number {
             let pool_created_filter = ICamelotV3Factory::Pool::decode_log(&log.inner, true)?;
@@ -108,16 +106,15 @@ impl AutomatedMarketMakerFactory for CamelotV3Factory {
         }
     }
 
-    async fn get_all_amms<T, N, P>(
+    async fn get_all_amms<N, P>(
         &self,
         to_block: Option<u64>,
         provider: Arc<P>,
         step: u64,
     ) -> Result<Vec<AMM>, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         if let Some(block) = to_block {
             self.get_all_pools_from_logs(block, step, provider).await
@@ -127,16 +124,15 @@ impl AutomatedMarketMakerFactory for CamelotV3Factory {
     }
 
     #[instrument(skip(self, amms, provider) level = "debug")]
-    async fn populate_amm_data<T, N, P>(
+    async fn populate_amm_data<N, P>(
         &self,
         amms: &mut [AMM],
         block_number: Option<u64>,
         provider: Arc<P>,
     ) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         if let Some(block_number) = block_number {
             // Max batch size for call
@@ -189,16 +185,15 @@ impl CamelotV3Factory {
         }
     }
 
-    pub async fn get_all_pools_from_logs<T, N, P>(
+    pub async fn get_all_pools_from_logs<N, P>(
         self,
         to_block: u64,
         step: u64,
         provider: Arc<P>,
     ) -> Result<Vec<AMM>, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         // Unwrap can be used here because the creation block was verified within `Dex::new()`
         let mut from_block = self.creation_block;
@@ -280,7 +275,7 @@ impl CamelotV3Factory {
     }
 
     // Function to get all pair created events for a given Dex factory address and sync pool data
-    pub async fn get_pools_from_logs<T, N, P>(
+    pub async fn get_pools_from_logs<N, P>(
         self,
         start_block: u64,
         to_block: u64,
@@ -288,9 +283,8 @@ impl CamelotV3Factory {
         provider: Arc<P>,
     ) -> Result<Vec<AMM>, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         // Unwrap can be used here because the creation block was verified within `Dex::new()`
         let mut aggregated_amms: HashMap<Address, AMM> = HashMap::new();

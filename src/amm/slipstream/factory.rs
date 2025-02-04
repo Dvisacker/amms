@@ -10,6 +10,7 @@ use alloy::{
     rpc::types::eth::{Filter, Log},
     sol,
     sol_types::SolEvent,
+    transports::Transport,
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;

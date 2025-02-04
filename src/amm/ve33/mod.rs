@@ -105,11 +105,10 @@ impl AutomatedMarketMaker for Ve33Pool {
     }
 
     #[instrument(skip(self, provider), level = "debug")]
-    async fn sync<T, N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
+    async fn sync<N, P>(&mut self, provider: Arc<P>) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let (reserve_0, reserve_1) = self.get_reserves(provider.clone()).await?;
         tracing::info!(?reserve_0, ?reserve_1, address = ?self.address, "Ve33 sync");
@@ -121,15 +120,14 @@ impl AutomatedMarketMaker for Ve33Pool {
     }
 
     #[instrument(skip(self, provider), level = "debug")]
-    async fn populate_data<T, N, P>(
+    async fn populate_data<N, P>(
         &mut self,
         _block_number: Option<u64>,
         provider: Arc<P>,
     ) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         batch_request::get_ve33_pool_data_batch_request(
             std::slice::from_mut(self),
@@ -311,15 +309,14 @@ impl Ve33Pool {
     }
 
     /// Creates a new instance of the pool from the pair address, and syncs the pool data.
-    pub async fn new_from_address<T, N, P>(
+    pub async fn new_from_address<N, P>(
         pair_address: Address,
         fee: u32,
         provider: Arc<P>,
     ) -> Result<Self, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let mut pool = Ve33Pool {
             address: pair_address,
@@ -351,15 +348,10 @@ impl Ve33Pool {
     /// Creates a new instance of a the pool from a `PairCreated` event log.
     ///
     /// This method syncs the pool data.
-    pub async fn new_from_log<T, N, P>(
-        log: Log,
-        fee: u32,
-        provider: Arc<P>,
-    ) -> Result<Self, AMMError>
+    pub async fn new_from_log<N, P>(log: Log, fee: u32, provider: Arc<P>) -> Result<Self, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let event_signature = log.data().topics()[0];
 
@@ -418,11 +410,10 @@ impl Ve33Pool {
     }
 
     /// Returns the reserves of the pool.
-    pub async fn get_reserves<T, N, P>(&self, provider: Arc<P>) -> Result<(u128, u128), AMMError>
+    pub async fn get_reserves<N, P>(&self, provider: Arc<P>) -> Result<(u128, u128), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         // Initialize a new instance of the Pool
         let pool = IAerodromePool::new(self.address, provider);
@@ -444,14 +435,10 @@ impl Ve33Pool {
         Ok((reserve_0, reserve_1))
     }
 
-    pub async fn get_token_decimals<T, N, P>(
-        &mut self,
-        provider: Arc<P>,
-    ) -> Result<(u8, u8), AMMError>
+    pub async fn get_token_decimals<N, P>(&mut self, provider: Arc<P>) -> Result<(u8, u8), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let IErc20::decimalsReturn {
             _0: token_a_decimals,
@@ -472,15 +459,14 @@ impl Ve33Pool {
         Ok((token_a_decimals, token_b_decimals))
     }
 
-    pub async fn get_token_0<T, N, P>(
+    pub async fn get_token_0<N, P>(
         &self,
         pair_address: Address,
         provider: Arc<P>,
     ) -> Result<Address, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let pool = IAerodromePool::new(pair_address, provider);
 
@@ -492,15 +478,14 @@ impl Ve33Pool {
         Ok(token0)
     }
 
-    pub async fn get_token_1<T, N, P>(
+    pub async fn get_token_1<N, P>(
         &self,
         pair_address: Address,
         middleware: Arc<P>,
     ) -> Result<Address, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let pool = IAerodromePool::new(pair_address, middleware);
 

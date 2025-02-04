@@ -7,7 +7,6 @@ use alloy::{
     rpc::types::eth::Log,
     sol,
     sol_types::SolEvent,
-    transports::Transport,
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
@@ -53,14 +52,10 @@ impl Ve33Factory {
         }
     }
 
-    pub async fn get_all_pools_batched<T, N, P>(
-        &self,
-        provider: Arc<P>,
-    ) -> Result<Vec<AMM>, AMMError>
+    pub async fn get_all_pools_batched<N, P>(&self, provider: Arc<P>) -> Result<Vec<AMM>, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let factory = IVe33Factory::new(self.address, provider.clone());
 
@@ -127,11 +122,10 @@ impl AutomatedMarketMakerFactory for Ve33Factory {
         IVe33Factory::PairCreated::SIGNATURE_HASH
     }
 
-    async fn new_amm_from_log<T, N, P>(&self, log: Log, provider: Arc<P>) -> Result<AMM, AMMError>
+    async fn new_amm_from_log<N, P>(&self, log: Log, provider: Arc<P>) -> Result<AMM, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         let pair_created_event = IVe33Factory::PairCreated::decode_log(log.as_ref(), true)?;
         Ok(AMM::UniswapV2Pool(
@@ -161,30 +155,28 @@ impl AutomatedMarketMakerFactory for Ve33Factory {
     }
 
     #[instrument(skip(self, provider) level = "debug")]
-    async fn get_all_amms<T, N, P>(
+    async fn get_all_amms<N, P>(
         &self,
         _to_block: Option<u64>,
         provider: Arc<P>,
         _step: u64,
     ) -> Result<Vec<AMM>, AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         self.get_all_pools_batched(provider).await
     }
 
-    async fn populate_amm_data<T, N, P>(
+    async fn populate_amm_data<N, P>(
         &self,
         amms: &mut [AMM],
         _block_number: Option<u64>,
         provider: Arc<P>,
     ) -> Result<(), AMMError>
     where
-        T: Transport + Clone,
         N: Network,
-        P: Provider<T, N>,
+        P: Provider<N>,
     {
         // Max batch size for call
         let step = 127;

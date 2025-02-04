@@ -5,7 +5,6 @@ use alloy::{
     network::Network,
     primitives::aliases::I24,
     providers::Provider,
-    transports::Transport,
 };
 use tracing::instrument;
 
@@ -39,15 +38,14 @@ fn populate_pool_data_from_tokens(
     Some(pool)
 }
 
-pub async fn get_camelot_v3_pool_data_batch_request<T, N, P>(
+pub async fn get_camelot_v3_pool_data_batch_request<N, P>(
     pool: &mut CamelotV3Pool,
     block_number: Option<u64>,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let deployer = GetCamelotV3PoolDataBatchRequest::deploy_builder(provider, vec![pool.address]);
     let res = if let Some(block_number) = block_number {
@@ -90,7 +88,7 @@ pub struct UniswapV3TickData {
     pub liquidity_net: i128,
 }
 
-pub async fn get_camelot_v3_tick_data_batch_request<T, N, P>(
+pub async fn get_camelot_v3_tick_data_batch_request<N, P>(
     pool: &CamelotV3Pool,
     tick_start: i32,
     zero_for_one: bool,
@@ -99,9 +97,8 @@ pub async fn get_camelot_v3_tick_data_batch_request<T, N, P>(
     provider: Arc<P>,
 ) -> Result<(Vec<UniswapV3TickData>, u64), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let deployer = GetCamelotV3TickDataBatchRequest::deploy_builder(
         provider,
@@ -172,14 +169,13 @@ where
     Ok((tick_data, block_number))
 }
 
-pub async fn sync_camelot_v3_pool_batch_request<T, N, P>(
+pub async fn sync_camelot_v3_pool_batch_request<N, P>(
     pool: &mut CamelotV3Pool,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let deployer = SyncCamelotV3PoolBatchRequest::deploy_builder(provider, vec![pool.address]);
     let res = deployer.call_raw().await?;
@@ -231,15 +227,14 @@ where
 }
 
 #[instrument(skip(provider) level = "debug")]
-pub async fn get_amm_data_batch_request<T, N, P>(
+pub async fn get_amm_data_batch_request<N, P>(
     amms: &mut [AMM],
     block_number: u64,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let mut target_addresses = vec![];
 

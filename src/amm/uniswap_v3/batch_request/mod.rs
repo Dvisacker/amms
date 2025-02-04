@@ -5,7 +5,6 @@ use alloy::{
     providers::Provider,
     sol,
     sol_types::SolType,
-    transports::Transport,
 };
 use std::{cmp::min, sync::Arc, vec};
 use tracing::instrument;
@@ -79,15 +78,14 @@ pub fn populate_v3_pool_data(
     Ok(())
 }
 
-pub async fn fetch_v3_pool_data_batch_request<T, N, P>(
+pub async fn fetch_v3_pool_data_batch_request<N, P>(
     addresses: &[Address],
     block_number: Option<u64>,
     provider: Arc<P>,
 ) -> Result<Vec<UniswapV3PoolData>, AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let deployer = GetUniV3PoolData::deploy_builder(provider, addresses.to_vec());
     let res = if let Some(block_number) = block_number {
@@ -101,15 +99,14 @@ where
     Ok(return_data)
 }
 
-pub async fn get_v3_pool_data_batch_request<T, N, P>(
+pub async fn get_v3_pool_data_batch_request<N, P>(
     pools: &mut [UniswapV3Pool],
     block_number: Option<u64>,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let mut target_addresses = vec![];
     for pool in pools.iter() {
@@ -135,7 +132,7 @@ where
     Ok(())
 }
 
-pub async fn get_uniswap_v3_tick_data_batch_request<T, N, P>(
+pub async fn get_uniswap_v3_tick_data_batch_request<N, P>(
     pool: &UniswapV3Pool,
     tick_start: i32,
     num_ticks: i32,
@@ -144,9 +141,8 @@ pub async fn get_uniswap_v3_tick_data_batch_request<T, N, P>(
     exchange_id: u8, // 1 for uniswap v3, 2 for pancake v3, 3 for slipstream
 ) -> Result<(Vec<PopulatedTick>, U256), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let mut all_tick_data: Vec<PopulatedTick> = vec![];
     let mut last_tick = tick_start;
@@ -199,14 +195,13 @@ where
     Ok((all_tick_data, U256::from(bn)))
 }
 
-pub async fn sync_v3_pool_batch_request<T, N, P>(
+pub async fn sync_v3_pool_batch_request<N, P>(
     pool: &mut UniswapV3Pool,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let deployer = SyncUniswapV3PoolBatchRequest::deploy_builder(provider, vec![pool.address]);
     let res = deployer.call_raw().await?;
@@ -222,15 +217,14 @@ where
 }
 
 #[instrument(skip(provider) level = "debug")]
-pub async fn get_amm_data_batch_request<T, N, P>(
+pub async fn get_amm_data_batch_request<N, P>(
     amms: &mut [AMM],
     block_number: u64,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let mut target_addresses = vec![];
 

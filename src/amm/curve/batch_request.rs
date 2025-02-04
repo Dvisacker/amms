@@ -3,7 +3,6 @@ use alloy::{
     network::Network,
     primitives::{Address, U256},
     providers::Provider,
-    transports::Transport,
 };
 use std::sync::Arc;
 
@@ -59,14 +58,13 @@ fn populate_pool_data_from_tokens(
     Ok(pool)
 }
 
-pub async fn get_curve_pool_data_batch_request<T, N, P>(
+pub async fn get_curve_pool_data_batch_request<N, P>(
     pool: &mut CurvePool,
     provider: Arc<P>,
 ) -> Result<(), AMMError>
 where
-    T: Transport + Clone,
     N: Network,
-    P: Provider<T, N>,
+    P: Provider<N>,
 {
     let deployer = bindings::getcurvepoolbatchrequest::GetCurvePoolBatchRequest::deploy_builder(
         provider,
