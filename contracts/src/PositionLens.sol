@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
 pragma solidity ^0.8.0;
 
-import {DEX} from "./PoolUtils.sol";
+import {DEX} from "./PoolHelpers.sol";
 import {LiquidityAmounts} from "../lib/uni-v3-lib/src/LiquidityAmounts.sol";
 import {PoolCaller, V3PoolCallee} from "../lib/uni-v3-lib/src/PoolCaller.sol";
 import {TickMath} from "../lib/uni-v3-lib/src/TickMath.sol";
-import {PoolUtils} from "./PoolUtils.sol";
+import {PoolHelpers} from "./PoolHelpers.sol";
 
 /* 
 Original contract by Aperture Finance
 https://github.com/Aperture-Finance/Aperture-Lens/blob/main/contracts/PositionLens.sol
 */
-contract PositionLens is PoolUtils {
+contract PositionLens is PoolHelpers {
     using TickMath for int24;
 
     /// @notice Returns the fees owed to a position

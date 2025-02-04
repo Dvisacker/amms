@@ -15,11 +15,11 @@ use crate::{
     bindings::{
         getclpoolticksinrange::{
             GetCLPoolTicksInRange::{self},
-            PoolUtils::PopulatedTick,
+            PoolHelpers::PopulatedTick,
         },
-        getuniv3pooldata::{GetUniV3PoolData, PoolUtils::UniswapV3PoolData},
+        getuniv3pooldata::{GetUniV3PoolData, PoolHelpers::UniswapV3PoolData},
         syncuniswapv3poolbatchrequest::{
-            PoolUtils::UniswapV3PoolPriceData, SyncUniswapV3PoolBatchRequest,
+            PoolHelpers::UniswapV3PoolPriceData, SyncUniswapV3PoolBatchRequest,
         },
     },
     errors::AMMError,
@@ -52,7 +52,7 @@ sol! {
 
 type SolArray<T> = sol! { T[] };
 
-fn fixed_bytes_to_string(bytes: &FixedBytes<32>) -> String {
+pub fn fixed_bytes_to_string(bytes: &FixedBytes<32>) -> String {
     let mut result = String::from_utf8_lossy(bytes.as_slice()).into_owned();
     result.truncate(result.trim_end_matches('\0').len());
     result

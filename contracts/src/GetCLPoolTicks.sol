@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./PoolUtils.sol";
-
+import "./PoolHelpers.sol";
 /* 
 Original contract by Aperture Finance
 */
-contract GetCLPoolTicks is PoolUtils {
+contract GetCLPoolTicks is PoolHelpers {
     constructor(DEX dex, V3PoolCallee pool, int24 tickLower, int24 tickUpper) payable {
         Slot[] memory slots = getPopulatedTicksInRange(dex, pool, tickLower, tickUpper);
         bytes memory returnData = abi.encode(slots);
