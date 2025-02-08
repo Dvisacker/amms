@@ -12,7 +12,6 @@ use alloy::{
     providers::Provider,
     rpc::types::eth::Log,
     sol_types::{SolCall, SolEvent},
-    transports::Transport,
 };
 use alloy_chains::NamedChain;
 use async_trait::async_trait;
@@ -88,6 +87,7 @@ impl From<Ve33Pool> for NewDbUniV2Pool {
             fee: pool.fee as i32,
             factory_address: Some(pool.factory.to_string()),
             active: None,
+            tag: None,
         }
     }
 }
@@ -266,6 +266,7 @@ impl AutomatedMarketMaker for Ve33Pool {
             exchange_type: Some(self.exchange_type.as_str().to_string()),
             factory_address: Some(self.factory.to_string()),
             active: None,
+            tag: None,
         })
     }
 }

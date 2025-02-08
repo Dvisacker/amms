@@ -172,6 +172,7 @@ impl From<UniswapV3Pool> for NewDbUniV3Pool {
             ticks: Some(serde_json::to_value(&pool.ticks).unwrap()),
             factory_address: Some(pool.factory.to_string()),
             active: None,
+            tag: None,
         }
     }
 }
@@ -594,6 +595,7 @@ impl AutomatedMarketMaker for UniswapV3Pool {
             ticks: None,
             factory_address: Some(self.factory.to_string()),
             active: None,
+            tag: None,
         })
     }
 }
@@ -2330,7 +2332,7 @@ mod test {
         let rpc_endpoint = std::env::var("BASE_RPC_URL").expect("Missing RPC url");
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_slipstream_usdc_weth_pool(provider.clone())
+        let (_pool, _synced_block) = initialize_slipstream_usdc_weth_pool(provider.clone())
             .await
             .unwrap();
         // let quoter = IQuoter::new(

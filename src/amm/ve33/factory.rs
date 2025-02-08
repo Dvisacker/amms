@@ -151,6 +151,7 @@ impl AutomatedMarketMakerFactory for Ve33Factory {
             exchange_type: ExchangeType::Unknown,
             chain: NamedChain::Mainnet,
             factory: Address::ZERO,
+            tag: None,
         }))
     }
 

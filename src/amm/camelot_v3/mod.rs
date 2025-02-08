@@ -481,6 +481,7 @@ impl AutomatedMarketMaker for CamelotV3Pool {
             ticks: None,
             factory_address: None, //TODO
             active: None,
+            tag: None,
         })
     }
 }
