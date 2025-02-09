@@ -302,7 +302,7 @@ impl AutomatedMarketMaker for CurvePool {
         self.chain
     }
 
-    fn to_new_db_pool(&self) -> NewDbPool {
+    fn to_new_db_pool(&self, tag: Option<String>) -> NewDbPool {
         NewDbPool::Curve(NewDbCurvePool {
             address: self.address.to_string(),
             chain: self.chain.as_str().to_string(),
@@ -325,7 +325,7 @@ impl AutomatedMarketMaker for CurvePool {
             token_d_decimals: Some(self.coin_decimals[3] as i32),
             token_d_balance: Some(self.balances[3].to_string()),
             active: None,
-            tag: None,
+            tag: tag,
         })
     }
 }

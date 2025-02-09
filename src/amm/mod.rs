@@ -102,7 +102,7 @@ pub trait AutomatedMarketMaker {
     /// Returns the token out of the AMM for a given `token_in`.
     // fn get_token_out(&self, token_in: Address) -> Address;
 
-    fn to_new_db_pool(&self) -> NewDbPool;
+    fn to_new_db_pool(&self, tag: Option<String>) -> NewDbPool;
 
     fn exchange_name(&self) -> ExchangeName;
     fn exchange_type(&self) -> ExchangeType;
@@ -159,9 +159,9 @@ macro_rules! amm {
                 }
             }
 
-            fn to_new_db_pool(&self) -> NewDbPool {
+            fn to_new_db_pool(&self, tag: Option<String>) -> NewDbPool {
                 match self {
-                    $(AMM::$pool_type(pool) => pool.to_new_db_pool(),)+
+                    $(AMM::$pool_type(pool) => pool.to_new_db_pool(tag),)+
                 }
             }
 

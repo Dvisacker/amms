@@ -460,7 +460,7 @@ impl AutomatedMarketMaker for CamelotV3Pool {
         self.chain
     }
 
-    fn to_new_db_pool(&self) -> NewDbPool {
+    fn to_new_db_pool(&self, tag: Option<String>) -> NewDbPool {
         NewDbPool::UniV3(NewDbUniV3Pool {
             address: self.address.to_string(),
             chain: self.chain.as_str().to_string(),
@@ -481,7 +481,7 @@ impl AutomatedMarketMaker for CamelotV3Pool {
             ticks: None,
             factory_address: None, //TODO
             active: None,
-            tag: None,
+            tag: tag,
         })
     }
 }

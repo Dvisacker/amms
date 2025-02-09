@@ -249,7 +249,7 @@ impl AutomatedMarketMaker for Ve33Pool {
         self.chain
     }
 
-    fn to_new_db_pool(&self) -> NewDbPool {
+    fn to_new_db_pool(&self, tag: Option<String>) -> NewDbPool {
         NewDbPool::UniV2(NewDbUniV2Pool {
             address: self.address.to_string(),
             chain: self.chain.as_str().to_string(),
@@ -266,7 +266,7 @@ impl AutomatedMarketMaker for Ve33Pool {
             exchange_type: Some(self.exchange_type.as_str().to_string()),
             factory_address: Some(self.factory.to_string()),
             active: None,
-            tag: None,
+            tag: tag,
         })
     }
 }

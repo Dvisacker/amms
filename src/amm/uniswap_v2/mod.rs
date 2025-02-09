@@ -57,7 +57,6 @@ pub struct UniswapV2Pool {
     #[serde(with = "chain_serde")]
     pub chain: NamedChain,
     pub factory: Address,
-    pub tag: Option<String>,
 }
 
 impl From<NewDbUniV2Pool> for UniswapV2Pool {
@@ -81,7 +80,6 @@ impl From<NewDbUniV2Pool> for UniswapV2Pool {
             exchange_name: ExchangeName::from_str(&pool.exchange_name.unwrap()).unwrap(),
             exchange_type: ExchangeType::from_str(&pool.exchange_type.unwrap()).unwrap(),
             chain: pool.chain.parse::<NamedChain>().unwrap(),
-            tag: pool.tag,
         }
     }
 }
@@ -104,7 +102,7 @@ impl From<UniswapV2Pool> for NewDbUniV2Pool {
             fee: pool.fee as i32,
             factory_address: Some(pool.factory.to_string()),
             active: None,
-            tag: pool.tag,
+            tag: None,
         }
     }
 }
@@ -273,7 +271,7 @@ impl AutomatedMarketMaker for UniswapV2Pool {
         self.chain
     }
 
-    fn to_new_db_pool(&self) -> NewDbPool {
+    fn to_new_db_pool(&self, tag: Option<String>) -> NewDbPool {
         NewDbPool::UniV2(NewDbUniV2Pool {
             address: self.address.to_string(),
             chain: self.chain.as_str().to_string(),
@@ -290,7 +288,7 @@ impl AutomatedMarketMaker for UniswapV2Pool {
             exchange_type: Some(self.exchange_type.as_str().to_string()),
             factory_address: Some(self.factory.to_string()),
             active: None,
-            tag: None,
+            tag: tag,
         })
     }
 }
@@ -312,7 +310,6 @@ impl UniswapV2Pool {
         exchange_name: ExchangeName,
         exchange_type: ExchangeType,
         chain: NamedChain,
-        tag: Option<String>,
     ) -> UniswapV2Pool {
         UniswapV2Pool {
             address,
@@ -329,7 +326,6 @@ impl UniswapV2Pool {
             exchange_name,
             exchange_type,
             chain,
-            tag: tag,
         }
     }
 
@@ -358,7 +354,6 @@ impl UniswapV2Pool {
             exchange_name: ExchangeName::Unknown,
             exchange_type: ExchangeType::Unknown,
             chain: NamedChain::Mainnet,
-            tag: None,
         };
 
         pool.populate_data(None, provider.clone()).await?;
@@ -414,7 +409,6 @@ impl UniswapV2Pool {
                 exchange_name: ExchangeName::UniswapV2,
                 exchange_type: ExchangeType::UniV2,
                 chain: NamedChain::Mainnet,
-                tag: None,
             })
         } else {
             Err(EventLogError::InvalidEventSignature)?

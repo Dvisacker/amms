@@ -202,7 +202,7 @@ impl AutomatedMarketMaker for ERC4626Vault {
         self.chain
     }
 
-    fn to_new_db_pool(&self) -> NewDbPool {
+    fn to_new_db_pool(&self, tag: Option<String>) -> NewDbPool {
         NewDbPool::ERC4626Vault(NewDbErc4626Vault {
             address: self.vault_token.to_string(),
             chain: self.chain.as_str().to_string(),
@@ -219,6 +219,7 @@ impl AutomatedMarketMaker for ERC4626Vault {
             exchange_name: Some(self.exchange_name.as_str().to_string()),
             exchange_type: Some(self.exchange_type.as_str().to_string()),
             active: None,
+            tag: tag,
         })
     }
 }

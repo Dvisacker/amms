@@ -184,7 +184,6 @@ mod tests {
             exchange_name: ExchangeName::Aerodrome,
             exchange_type: ExchangeType::UniV2,
             chain: NamedChain::Base,
-            tag: None,
         };
 
         let mut amms = vec![AMM::UniswapV2Pool(test_pool)];
