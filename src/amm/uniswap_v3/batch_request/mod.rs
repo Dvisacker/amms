@@ -195,6 +195,8 @@ where
     Ok((all_tick_data, U256::from(bn)))
 }
 
+// TODO: This function is confusing and not very useful since it only syncs the
+// tick and liquidity (and not the entire data). Remove or rename this function
 pub async fn sync_v3_pool_batch_request<N, P>(
     pool: &mut UniswapV3Pool,
     provider: Arc<P>,

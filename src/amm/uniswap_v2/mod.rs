@@ -329,6 +329,26 @@ impl UniswapV2Pool {
         }
     }
 
+    pub fn new_empty(address: Address, chain: NamedChain) -> Result<Self, AMMError> {
+        let pool = UniswapV2Pool {
+            address,
+            token_a: Address::ZERO,
+            token_a_decimals: 0,
+            token_a_symbol: String::new(),
+            token_b: Address::ZERO,
+            token_b_decimals: 0,
+            token_b_symbol: String::new(),
+            reserve_0: 0,
+            reserve_1: 0,
+            fee: 0,
+            factory: Address::ZERO,
+            exchange_name: ExchangeName::Unknown,
+            exchange_type: ExchangeType::Unknown,
+            chain,
+        };
+        Ok(pool)
+    }
+
     /// Creates a new instance of the pool from the pair address, and syncs the pool data.
     pub async fn new_from_address<N, P>(
         pair_address: Address,

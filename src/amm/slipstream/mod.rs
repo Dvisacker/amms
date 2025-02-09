@@ -653,7 +653,7 @@ impl AerodromeCLPool {
         }
     }
 
-    pub async fn new_empty(address: Address, chain: NamedChain) -> Result<Self, AMMError> {
+    pub fn new_empty(address: Address, chain: NamedChain) -> Result<Self, AMMError> {
         let pool = AerodromeCLPool {
             address,
             factory: Address::ZERO,

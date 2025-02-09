@@ -158,6 +158,7 @@ mod tests {
     use std::str::FromStr;
     use types::exchange::ExchangeName;
 
+    #[allow(unused_variables)]
     const POOL_WITH_LARGE_RESERVES: &str = "0x8ff6c0958199a79ac0a619a88ceb6c0c96f16f89";
     const WETH_USDC: &str = "0x3548029694fbb241d45fb24ba0cd9c9d4e745f16";
 

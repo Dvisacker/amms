@@ -654,7 +654,7 @@ impl UniswapV3Pool {
         }
     }
 
-    pub async fn new_empty(address: Address, chain: NamedChain) -> Result<Self, AMMError> {
+    pub fn new_empty(address: Address, chain: NamedChain) -> Result<Self, AMMError> {
         let pool = UniswapV3Pool {
             address,
             factory: Address::ZERO,
