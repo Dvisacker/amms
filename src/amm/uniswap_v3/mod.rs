@@ -1487,13 +1487,16 @@ mod test {
         }
     }
 
-    async fn initialize_usdc_weth_pool<N, P>(provider: Arc<P>) -> eyre::Result<(UniswapV3Pool, u64)>
+    async fn initialize_pool<N, P>(
+        provider: Arc<P>,
+        address: Address,
+    ) -> eyre::Result<(UniswapV3Pool, u64)>
     where
         N: Network,
         P: Provider<N>,
     {
         let mut pool = UniswapV3Pool {
-            address: address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
+            address: address,
             ..Default::default()
         };
 
@@ -1521,69 +1524,18 @@ mod test {
         Ok((pool, synced_block))
     }
 
-    async fn initialize_weth_link_pool<N, P>(provider: Arc<P>) -> eyre::Result<(UniswapV3Pool, u64)>
-    where
-        N: Network,
-        P: Provider<N>,
-    {
-        let mut pool = UniswapV3Pool {
-            address: address!("a6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8"),
-            ..Default::default()
-        };
-
-        let creation_block = 12375680;
-        pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
-        let synced_block = pool
-            .populate_tick_data(creation_block, provider.clone())
-            .await?;
-        pool.populate_data(Some(synced_block), provider).await?;
-
-        Ok((pool, synced_block))
-    }
-
-    async fn initialize_slipstream_usdc_weth_pool<N, P>(
-        provider: Arc<P>,
-    ) -> eyre::Result<(UniswapV3Pool, u64)>
-    where
-        N: Network,
-        P: Provider<N>,
-    {
-        let mut pool = UniswapV3Pool {
-            address: address!("0x70aCDF2Ad0bf2402C957154f944c19Ef4e1cbAE1"),
-            ..Default::default()
-        };
-
-        pool.tick_spacing = pool.get_tick_spacing(provider.clone()).await?;
-        let synced_block = provider.get_block_number().await?;
-
-        pool.populate_data(Some(synced_block), provider.clone())
-            .await?;
-        let current_tick = pool.tick;
-        let num_ticks = 2000 * pool.tick_spacing;
-        let tick_start = current_tick - num_ticks / 2;
-
-        let (tick_data, _) = get_uniswap_v3_tick_data_batch_request(
-            &pool,
-            tick_start,
-            num_ticks,
-            Some(synced_block),
-            provider.clone(),
-            3, //slipstream
-        )
-        .await?;
-
-        pool.populate_ticks_from_tick_data(tick_data);
-
-        Ok((pool, synced_block))
-    }
-
     #[tokio::test]
     #[ignore] // Ignoring to not throttle the Provider on workflows
     async fn test_simulate_swap_usdc_weth() {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_usdc_weth_pool(provider.clone()).await.unwrap();
+        let (pool, synced_block) = initialize_pool(
+            provider.clone(),
+            address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
+        )
+        .await
+        .unwrap();
         let quoter = IQuoter::new(
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
@@ -1664,7 +1616,12 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_usdc_weth_pool(provider.clone()).await.unwrap();
+        let (pool, synced_block) = initialize_pool(
+            provider.clone(),
+            address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
+        )
+        .await
+        .unwrap();
         let quoter = IQuoter::new(
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
@@ -1723,7 +1680,12 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_weth_link_pool(provider.clone()).await.unwrap();
+        let (pool, synced_block) = initialize_pool(
+            provider.clone(),
+            address!("a6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8"),
+        )
+        .await
+        .unwrap();
         let quoter = IQuoter::new(
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
@@ -1793,7 +1755,12 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_weth_link_pool(provider.clone()).await.unwrap();
+        let (pool, synced_block) = initialize_pool(
+            provider.clone(),
+            address!("a6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8"),
+        )
+        .await
+        .unwrap();
         let quoter = IQuoter::new(
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
@@ -1863,7 +1830,12 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_usdc_weth_pool(provider.clone()).await.unwrap();
+        let (pool, synced_block) = initialize_pool(
+            provider.clone(),
+            address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
+        )
+        .await
+        .unwrap();
         let quoter = IQuoter::new(
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
@@ -1933,7 +1905,12 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_usdc_weth_pool(provider.clone()).await.unwrap();
+        let (pool, synced_block) = initialize_pool(
+            provider.clone(),
+            address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
+        )
+        .await
+        .unwrap();
         let quoter = IQuoter::new(
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
@@ -2003,7 +1980,12 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_weth_link_pool(provider.clone()).await.unwrap();
+        let (pool, synced_block) = initialize_pool(
+            provider.clone(),
+            address!("a6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8"),
+        )
+        .await
+        .unwrap();
         let quoter = IQuoter::new(
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
@@ -2092,7 +2074,12 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, synced_block) = initialize_weth_link_pool(provider.clone()).await.unwrap();
+        let (pool, synced_block) = initialize_pool(
+            provider.clone(),
+            address!("a6Cc3C2531FdaA6Ae1A3CA84c2855806728693e8"),
+        )
+        .await
+        .unwrap();
         let quoter = IQuoter::new(
             address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
             provider.clone(),
@@ -2214,7 +2201,12 @@ mod test {
         let rpc_endpoint = std::env::var("MAINNET_RPC_URL").unwrap();
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (pool, _synced_block) = initialize_usdc_weth_pool(provider.clone()).await.unwrap();
+        let (pool, _synced_block) = initialize_pool(
+            provider.clone(),
+            address!("88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640"),
+        )
+        .await
+        .unwrap();
 
         assert_eq!(
             pool.address,
@@ -2330,9 +2322,12 @@ mod test {
         let rpc_endpoint = std::env::var("BASE_RPC_URL").expect("Missing RPC url");
         let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
 
-        let (_pool, _synced_block) = initialize_slipstream_usdc_weth_pool(provider.clone())
-            .await
-            .unwrap();
+        let (_pool, _synced_block) = initialize_pool(
+            provider.clone(),
+            address!("0x70aCDF2Ad0bf2402C957154f944c19Ef4e1cbAE1"),
+        )
+        .await
+        .unwrap();
         // let quoter = IQuoter::new(
         //     address!("b27308f9f90d607463bb33ea1bebb41c27ce5ab6"),
         //     provider.clone(),

@@ -257,7 +257,7 @@ where
                 but there should probably be an arg to control the number of ticks to fetch
                 */
                 if full_sync {
-                    let num_ticks = uniswap_v3_pool.tick_spacing * 100;
+                    let num_ticks = uniswap_v3_pool.tick_spacing * 500;
                     let tick_start = uniswap_v3_pool.tick - num_ticks / 2;
                     let (tick_data, _) = get_uniswap_v3_tick_data_batch_request(
                         uniswap_v3_pool,
