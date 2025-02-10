@@ -257,7 +257,7 @@ where
                 but there should probably be an arg to control the number of ticks to fetch
                 */
                 if full_sync {
-                    let num_ticks = uniswap_v3_pool.tick_spacing * 2000;
+                    let num_ticks = uniswap_v3_pool.tick_spacing * 100;
                     let tick_start = uniswap_v3_pool.tick - num_ticks / 2;
                     let (tick_data, _) = get_uniswap_v3_tick_data_batch_request(
                         uniswap_v3_pool,
@@ -278,4 +278,57 @@ where
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    use alloy::{primitives::address, providers::ProviderBuilder};
+
+    #[tokio::test]
+    #[ignore]
+    async fn test_uniswap_v3_batch_full_sync() {
+        {
+            dotenv::dotenv().ok();
+            let rpc_endpoint = std::env::var("BASE_RPC_URL").expect("Missing RPC url");
+            let provider = Arc::new(ProviderBuilder::new().on_http(rpc_endpoint.parse().unwrap()));
+
+            let addresses = vec![
+                address!("e5b5f522e98b5a2baae212d4da66b865b781db97"),
+                address!("d0b53D9277642d899DF5C87A3966A349A798F224"),
+                address!("00bf864f6bb2466fa875b97715f3b7e0cb76198c"),
+                address!("20e068d76f9e90b90604500b84c7e19dcb923e7e"),
+            ];
+
+            let pools = addresses.iter().map(|addr| UniswapV3Pool {
+                address: *addr,
+                ..Default::default()
+            });
+
+            let synced_block = provider.get_block_number().await.unwrap();
+
+            for mut pool in pools.clone() {
+                pool.populate_data(Some(synced_block), provider.clone())
+                    .await
+                    .unwrap();
+            }
+
+            let mut amms: Vec<AMM> = pools
+                .into_iter()
+                .map(|pool| AMM::UniswapV3Pool(pool))
+                .collect();
+
+            get_amm_data_batch_request(&mut amms, synced_block, provider, true)
+                .await
+                .unwrap();
+
+            for amm in amms.iter() {
+                if let AMM::UniswapV3Pool(pool) = amm {
+                    assert!(!pool.ticks.is_empty());
+                }
+            }
+        }
+    }
 }
