@@ -324,7 +324,6 @@ impl AutomatedMarketMaker for CurvePool {
             token_d_symbol: Some(self.coin_symbols[3].clone()),
             token_d_decimals: Some(self.coin_decimals[3] as i32),
             token_d_balance: Some(self.balances[3].to_string()),
-            active: None,
             tag: tag,
         })
     }

@@ -86,7 +86,6 @@ impl From<Ve33Pool> for NewDbUniV2Pool {
             reserve_1: pool.reserve_1.to_string(),
             fee: pool.fee as i32,
             factory_address: Some(pool.factory.to_string()),
-            active: None,
             tag: None,
         }
     }
@@ -265,8 +264,7 @@ impl AutomatedMarketMaker for Ve33Pool {
             exchange_name: Some(self.exchange_name.as_str().to_string()),
             exchange_type: Some(self.exchange_type.as_str().to_string()),
             factory_address: Some(self.factory.to_string()),
-            active: None,
-            tag: tag,
+            tag: None,
         })
     }
 }

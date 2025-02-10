@@ -480,7 +480,6 @@ impl AutomatedMarketMaker for CamelotV3Pool {
             tick_bitmap: None,
             ticks: None,
             factory_address: None, //TODO
-            active: None,
             tag: tag,
         })
     }

@@ -171,7 +171,6 @@ impl From<UniswapV3Pool> for NewDbUniV3Pool {
             tick_bitmap: Some(serde_json::to_value(&pool.tick_bitmap).unwrap()),
             ticks: Some(serde_json::to_value(&pool.ticks).unwrap()),
             factory_address: Some(pool.factory.to_string()),
-            active: None,
             tag: None,
         }
     }
@@ -594,7 +593,6 @@ impl AutomatedMarketMaker for UniswapV3Pool {
             tick_bitmap: None,
             ticks: None,
             factory_address: Some(self.factory.to_string()),
-            active: None,
             tag: tag,
         })
     }
