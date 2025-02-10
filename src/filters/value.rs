@@ -284,6 +284,7 @@ mod test {
                 provider.clone(),
                 Some(CHECKPOINT_PATH),
                 500,
+                false,
             )
             .await
             .unwrap();

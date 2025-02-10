@@ -223,6 +223,7 @@ pub async fn get_amm_data_batch_request<N, P>(
     amms: &mut [AMM],
     block_number: u64,
     provider: Arc<P>,
+    full_sync: bool,
 ) -> Result<(), AMMError>
 where
     N: Network,
@@ -235,7 +236,8 @@ where
     }
 
     let return_data =
-        fetch_v3_pool_data_batch_request(&target_addresses, Some(block_number), provider).await?;
+        fetch_v3_pool_data_batch_request(&target_addresses, Some(block_number), provider.clone())
+            .await?;
 
     let mut pool_idx = 0;
     for pool_data in return_data {
@@ -246,6 +248,29 @@ where
                 .expect("Pool idx should be in bounds")
             {
                 populate_v3_pool_data(uniswap_v3_pool, &pool_data)?;
+
+                /*
+                Full syncing uniswap v3 involves fetching/retrieving tick data which
+                can be intensive RPC wise so we only do this if required
+
+                Currently we fetch 1000 (initialized) ticks around the current price tick
+                but there should probably be an arg to control the number of ticks to fetch
+                */
+                if full_sync {
+                    let num_ticks = uniswap_v3_pool.tick_spacing * 2000;
+                    let tick_start = uniswap_v3_pool.tick - num_ticks / 2;
+                    let (tick_data, _) = get_uniswap_v3_tick_data_batch_request(
+                        uniswap_v3_pool,
+                        tick_start,
+                        num_ticks,
+                        Some(block_number),
+                        provider.clone(),
+                        1, // uniswap v3
+                    )
+                    .await?;
+
+                    uniswap_v3_pool.populate_ticks_from_tick_data(tick_data);
+                }
             }
 
             pool_idx += 1;

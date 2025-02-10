@@ -26,6 +26,7 @@ pub async fn sync_amms<N, P>(
     provider: Arc<P>,
     checkpoint_path: Option<&str>,
     step: u64,
+    full_sync: bool,
 ) -> Result<(Vec<AMM>, u64), AMMError>
 where
     N: Network,
@@ -46,7 +47,7 @@ where
 
         tracing::info!("Populating {:?} AMMs from factory", amms.len());
 
-        populate_amms(&mut amms, current_block, provider.clone()).await?;
+        populate_amms(&mut amms, current_block, provider.clone(), full_sync).await?;
 
         amms = filters::filter_empty_amms(amms);
 
@@ -92,6 +93,7 @@ pub async fn populate_amms<N, P>(
     amms: &mut [AMM],
     block_number: u64,
     provider: Arc<P>,
+    full_sync: bool,
 ) -> Result<(), AMMError>
 where
     N: Network,
@@ -122,6 +124,7 @@ where
                         amm_chunk,
                         block_number,
                         provider.clone(),
+                        full_sync,
                     )
                     .await?;
                 }

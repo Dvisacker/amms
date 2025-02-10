@@ -108,6 +108,7 @@ impl AutomatedMarketMakerFactory for UniswapV3Factory {
                     amm_chunk,
                     block_number,
                     provider.clone(),
+                    false,
                 )
                 .await?;
             }
