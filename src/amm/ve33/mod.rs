@@ -264,7 +264,7 @@ impl AutomatedMarketMaker for Ve33Pool {
             exchange_name: Some(self.exchange_name.as_str().to_string()),
             exchange_type: Some(self.exchange_type.as_str().to_string()),
             factory_address: Some(self.factory.to_string()),
-            tag: None,
+            tag: tag,
         })
     }
 }
