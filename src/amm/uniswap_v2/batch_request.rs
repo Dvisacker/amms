@@ -32,6 +32,7 @@ pub fn populate_v2_pool_data(
     pool.token_b_symbol = fixed_bytes_to_string(&data.tokenBSymbol);
     pool.reserve_0 = data.reserve0.to::<u128>();
     pool.reserve_1 = data.reserve1.to::<u128>();
+    pool.factory = data.factory;
 
     Ok(())
 }
