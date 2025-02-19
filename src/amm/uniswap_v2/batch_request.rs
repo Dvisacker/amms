@@ -167,7 +167,7 @@ mod tests {
     async fn test_get_amm_data_batch_request() {
         // Get RPC URL from environment variable, or use default
         dotenv::dotenv().ok();
-        let provider = get_basic_provider(Chain::from_named(NamedChain::Base)).await;
+        let provider = Arc::new(get_basic_provider(Chain::from_named(NamedChain::Base)).await);
 
         // Create a test pool
         let pool_address = Address::from_str(WETH_USDC).expect("Invalid address");

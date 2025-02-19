@@ -811,16 +811,16 @@ pub fn q64_to_f64(x: u128) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use provider::get_anvil_signer_provider;
+    use provider::get_anvil_provider_arc;
     use std::str::FromStr;
 
     #[tokio::test]
     async fn test_stable_swap_calculations() -> Result<(), AMMError> {
         // Setup
-        let provider = get_anvil_signer_provider().await;
+        let provider = get_anvil_provider_arc().await;
         let pool_address = Address::from_str("0x6d0b9C9E92a3De30081563c3657B5258b3fFa38B").unwrap();
 
-        let pool = Ve33Pool::new_from_address(pool_address, 10, Arc::new(provider.clone())).await?;
+        let pool = Ve33Pool::new_from_address(pool_address, 10, provider).await?;
 
         let amount_in_1 = U256::from(1000000000);
 
@@ -854,12 +854,11 @@ mod tests {
     #[tokio::test]
     async fn test_volatile_swap_calculations() -> Result<(), AMMError> {
         // Setup
-        let provider = get_anvil_signer_provider().await;
+        let provider = get_anvil_provider_arc().await;
         // WETH/fBOMB pool
         let pool_address = Address::from_str("0x4f9dc2229f2357b27c22db56cb39582c854ad6d5").unwrap();
 
-        let pool =
-            Ve33Pool::new_from_address(pool_address, 300, Arc::new(provider.clone())).await?;
+        let pool = Ve33Pool::new_from_address(pool_address, 300, provider).await?;
 
         let amount_in_0 = U256::from(1000000000); // WETH amount
         let amount_out_1 = pool
